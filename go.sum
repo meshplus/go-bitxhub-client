@@ -48,8 +48,10 @@ github.com/lestrrat-go/strftime v1.0.0 h1:wZIfTHGdu7TeGu318uLJwuQvTMt9UpRyS+XV2R
 github.com/lestrrat-go/strftime v1.0.0/go.mod h1:E1nN3pCbtMSu1yjSVeyuRFVm/U0xoR76fd03sz+Qz4g=
 github.com/meshplus/bitxhub-kit v0.0.0-20200329124935-585edb85ca63 h1:WDsTW19L/BEaMukcTV2VQXinXhP2n3Y5nyTKeNPC5BI=
 github.com/meshplus/bitxhub-kit v0.0.0-20200329124935-585edb85ca63/go.mod h1:ra/AhOkPvpElI+wXrB9G6DjdcrdxFU3vMwA5MYKr9D0=
-github.com/meshplus/bitxhub-model v0.0.0-20200329125320-a37501c7a13e h1:066IcST8gbjy4mlAYbxAi0QZ26rMZ0Wl67g3Q04+7Os=
-github.com/meshplus/bitxhub-model v0.0.0-20200329125320-a37501c7a13e/go.mod h1:mJ6ucVyePaAojmQ8Y1NAS4PoZzCNxC/Q6EHC18HyMvw=
+github.com/meshplus/bitxhub-kit v1.0.0-rc1 h1:gNi8IFU5CMHT3KE2I4ACj5alMW9h/4cV8xOxn7wSmtA=
+github.com/meshplus/bitxhub-kit v1.0.0-rc1/go.mod h1:ra/AhOkPvpElI+wXrB9G6DjdcrdxFU3vMwA5MYKr9D0=
+github.com/meshplus/bitxhub-model v1.0.0-rc1 h1:9UajwmMvtOBLADzoJP+GxsaLMx3jew38Zp7xW+91sPM=
+github.com/meshplus/bitxhub-model v1.0.0-rc1/go.mod h1:mJ6ucVyePaAojmQ8Y1NAS4PoZzCNxC/Q6EHC18HyMvw=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.1/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
