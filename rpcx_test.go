@@ -15,7 +15,7 @@ import (
 
 var cfg = &config{
 	addrs: []string{
-		"localhost:60019",
+		"localhost:60011",
 	},
 	logger: logrus.New(),
 }

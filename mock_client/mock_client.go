@@ -138,6 +138,81 @@ func (mr *MockClientMockRecorder) GetChainMeta() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChainMeta", reflect.TypeOf((*MockClient)(nil).GetChainMeta))
 }
 
+// GetBlocks mocks base method
+func (m *MockClient) GetBlocks(offset, length uint64) (*pb.GetBlocksResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBlocks", offset, length)
+	ret0, _ := ret[0].(*pb.GetBlocksResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBlocks indicates an expected call of GetBlocks
+func (mr *MockClientMockRecorder) GetBlocks(offset, length interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), offset, length)
+}
+
+// GetBlock mocks base method
+func (m *MockClient) GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBlock", value, blockType)
+	ret0, _ := ret[0].(*pb.Block)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBlock indicates an expected call of GetBlock
+func (mr *MockClientMockRecorder) GetBlock(value, blockType interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlock", reflect.TypeOf((*MockClient)(nil).GetBlock), value, blockType)
+}
+
+// GetChainStatus mocks base method
+func (m *MockClient) GetChainStatus() (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetChainStatus")
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetChainStatus indicates an expected call of GetChainStatus
+func (mr *MockClientMockRecorder) GetChainStatus() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChainStatus", reflect.TypeOf((*MockClient)(nil).GetChainStatus))
+}
+
+// GetNetworkMeta mocks base method
+func (m *MockClient) GetNetworkMeta() (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNetworkMeta")
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNetworkMeta indicates an expected call of GetNetworkMeta
+func (mr *MockClientMockRecorder) GetNetworkMeta() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNetworkMeta", reflect.TypeOf((*MockClient)(nil).GetNetworkMeta))
+}
+
+// GetAccountBalance mocks base method
+func (m *MockClient) GetAccountBalance(address string) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccountBalance", address)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccountBalance indicates an expected call of GetAccountBalance
+func (mr *MockClientMockRecorder) GetAccountBalance(address interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountBalance", reflect.TypeOf((*MockClient)(nil).GetAccountBalance), address)
+}
+
 // SyncMerkleWrapper mocks base method
 func (m *MockClient) SyncMerkleWrapper(ctx context.Context, id string, num uint64) (chan *pb.MerkleWrapper, error) {
 	m.ctrl.T.Helper()
