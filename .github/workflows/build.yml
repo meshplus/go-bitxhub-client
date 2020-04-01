@@ -40,16 +40,19 @@ jobs:
 
       - name: Run BitXHub Solo
         run: |
+          CURRENT_PATH=$(pwd)
           export PATH=$PATH:$(go env GOPATH)/bin
           git clone https://github.com/meshplus/bitxhub.git
           cd bitxhub && git checkout master
           make prepare
           cd scripts && nohup bash solo.sh &
+          sleep 60
 
       - name: Run Unit tests
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          make test-coverage
+          cd "${CURRENT_PATH}" && make test-coverage
+          pkill -9 bitxhub
 
       - name: Upload Coverage report to CodeCov
         uses: codecov/codecov-action@v1.0.0
