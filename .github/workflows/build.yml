@@ -1,0 +1,77 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint:
+    name: Run golanci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run golangci-lint
+        uses: Mushus/golangci-linter@v1
+
+      - name: Go report card
+        uses: creekorful/goreportcard-action@v1.0
+
+
+  test:
+    name: Run unittest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Run BitXHub Solo
+        run: |
+          CURRENT_PATH=$(pwd)
+          export PATH=$PATH:$(go env GOPATH)/bin
+          git clone https://github.com/meshplus/bitxhub.git
+          cd bitxhub && git checkout master
+          make prepare
+          cd scripts && nohup bash solo.sh &
+          sleep 60
+
+      - name: Run Unit tests
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          cd "${CURRENT_PATH}" && make test-coverage
+          pkill -9 bitxhub
+
+      - name: Upload Coverage report to CodeCov
+        uses: codecov/codecov-action@v1.0.0
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./coverage.txt
+
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Go build
+        run: go build -v

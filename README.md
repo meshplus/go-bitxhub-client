@@ -1,5 +1,8 @@
 Go Bitxhub Client
 =====
+![build](https://github.com/meshplus/go-bitxhub-client/workflows/build/badge.svg)
+[![codecov](https://codecov.io/gh/meshplus/go-bitxhub-client/branch/master/graph/badge.svg)](https://codecov.io/gh/meshplus/go-bitxhub-client)
+[![Go Report Card](https://goreportcard.com/badge/github.com/meshplus/go-bitxhub-client)](https://goreportcard.com/report/github.com/meshplus/go-bitxhub-client)
 
 This SDK enables Go developers to build solutions that interact with BitXHub.
 
