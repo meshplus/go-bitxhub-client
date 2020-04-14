@@ -10,13 +10,12 @@ import (
 var _ Client = (*ChainClient)(nil)
 
 const (
-	GetBlocksTimeOut      = 10 * time.Second
-	GetBlockTimeOut       = 10 * time.Second
-	GetChainStatusTimeOut = 2 * time.Second
+	GetBlocksTimeout = 10 * time.Second
+	GetBlockTimeout  = 10 * time.Second
 )
 
 func (cli *ChainClient) GetBlocks(offset uint64, length uint64) (*pb.GetBlocksResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetBlocksTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetBlocksTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -31,7 +30,7 @@ func (cli *ChainClient) GetBlocks(offset uint64, length uint64) (*pb.GetBlocksRe
 }
 
 func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetBlockTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetBlockTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -46,12 +45,12 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 }
 
 func (cli *ChainClient) GetChainStatus() (*pb.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetChainStatusTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.GetChainStatus(ctx, &pb.Request{})
+	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_CHAIN_STATUS})
 }

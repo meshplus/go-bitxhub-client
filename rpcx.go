@@ -21,11 +21,11 @@ var (
 )
 
 const (
-	GetTransactionTimeOut    = 10 * time.Second
-	SendTransactionTimeOut   = 10 * time.Second
-	GetReceiptTimeOut        = 2 * time.Second
-	GetNetworkMetaTimeOut    = 2 * time.Second
-	GetAccountBalanceTimeOut = 2 * time.Second
+	GetTransactionTimeout    = 10 * time.Second
+	SendTransactionTimeout   = 10 * time.Second
+	GetReceiptTimeout        = 2 * time.Second
+	GetAccountBalanceTimeout = 2 * time.Second
+	GetInfoTimeout           = 2 * time.Second
 )
 
 type Appchain struct {
@@ -51,19 +51,30 @@ type ChainClient struct {
 	pool       *ConnectionPool
 }
 
-func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetNetworkMetaTimeOut)
+func (cli *ChainClient) GetValidators() (*pb.Response, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.GetNetworkMeta(ctx, &pb.Request{})
+	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_VALIDATORS})
+}
+
+func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_NETWORK})
 }
 
 func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetAccountBalanceTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetAccountBalanceTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -131,7 +142,7 @@ func (cli *ChainClient) GetReceipt(hash string) (*pb.Receipt, error) {
 }
 
 func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetTransactionTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetTransactionTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -174,7 +185,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction) (*pb.Rece
 }
 
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -201,7 +212,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
 }
 
 func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()

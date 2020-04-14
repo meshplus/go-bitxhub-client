@@ -183,6 +183,21 @@ func (mr *MockClientMockRecorder) GetChainStatus() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChainStatus", reflect.TypeOf((*MockClient)(nil).GetChainStatus))
 }
 
+// GetValidators mocks base method
+func (m *MockClient) GetValidators() (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetValidators")
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetValidators indicates an expected call of GetValidators
+func (mr *MockClientMockRecorder) GetValidators() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidators", reflect.TypeOf((*MockClient)(nil).GetValidators))
+}
+
 // GetNetworkMeta mocks base method
 func (m *MockClient) GetNetworkMeta() (*pb.Response, error) {
 	m.ctrl.T.Helper()
