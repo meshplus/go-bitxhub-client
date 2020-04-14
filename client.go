@@ -50,6 +50,9 @@ type Client interface {
 	//Get the status of the blockchain from BitXHub, normal or abnormal.
 	GetChainStatus() (*pb.Response, error)
 
+	//Get the validators from BitXHub.
+	GetValidators() (*pb.Response, error)
+
 	//Get the current network situation of BitXHub.
 	GetNetworkMeta() (*pb.Response, error)
 
