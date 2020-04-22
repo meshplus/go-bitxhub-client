@@ -14,7 +14,7 @@ const (
 	GetBlockTimeout  = 10 * time.Second
 )
 
-func (cli *ChainClient) GetBlocks(offset uint64, length uint64) (*pb.GetBlocksResponse, error) {
+func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetBlocksTimeout)
 	defer cancel()
 
@@ -23,8 +23,8 @@ func (cli *ChainClient) GetBlocks(offset uint64, length uint64) (*pb.GetBlocksRe
 		return nil, err
 	}
 	request := &pb.GetBlocksRequest{
-		Offset: offset,
-		Length: length,
+		Start: start,
+		End:   end,
 	}
 	return grpcClient.broker.GetBlocks(ctx, request)
 }

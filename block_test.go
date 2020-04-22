@@ -27,7 +27,7 @@ func TestChainClient_GetChainStatus(t *testing.T) {
 func TestChainClient_GetBlocks(t *testing.T) {
 	cli, err := Cli()
 	require.Nil(t, err)
-	blocks, err := cli.GetBlocks(0, 1)
+	blocks, err := cli.GetBlocks(1, 1)
 	require.Nil(t, err)
 	require.Equal(t, len(blocks.Blocks), 1)
 }
