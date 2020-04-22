@@ -4,17 +4,16 @@ import (
 	"context"
 
 	"github.com/meshplus/bitxhub-model/pb"
-	"github.com/wonderivan/logger"
 )
 
-func (cli *ChainClient) Subscribe(ctx context.Context, typ SubscriptionType) (<-chan interface{}, error) {
+func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionRequest_Type) (<-chan interface{}, error) {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
 	}
 
 	req := &pb.SubscriptionRequest{
-		Type: pb.SubscriptionRequest_BLOCK,
+		Type: typ,
 	}
 
 	subClient, err := grpcClient.broker.Subscribe(ctx, req)
@@ -36,13 +35,37 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ SubscriptionType) (<-
 					return
 				}
 
-				m := &pb.Block{}
-				if err := m.Unmarshal(resp.Data); err != nil {
-					logger.Error("unmarshal: ", err)
-					continue
+				var ret interface{}
+				switch typ {
+				case pb.SubscriptionRequest_BLOCK_HEADER:
+					header := &pb.BlockHeader{}
+					if err := header.Unmarshal(resp.Data); err != nil {
+						ret = resp.Data
+					}
+					ret = header
+				case pb.SubscriptionRequest_BLOCK:
+					block := &pb.Block{}
+					if err := block.Unmarshal(resp.Data); err != nil {
+						ret = resp.Data
+					}
+					ret = block
+				case pb.SubscriptionRequest_EVENT:
+					event := &pb.Event{}
+					if err := event.Unmarshal(resp.Data); err != nil {
+						ret = resp.Data
+					}
+					ret = event
+				case pb.SubscriptionRequest_INTERCHAIN_TX:
+					ibtp := &pb.IBTP{}
+					if err := ibtp.Unmarshal(resp.Data); err != nil {
+						ret = resp.Data
+					}
+					ret = ibtp
+				default:
+					ret = resp.Data
 				}
 
-				c <- m
+				c <- ret
 			}
 		}
 	}()

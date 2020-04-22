@@ -37,7 +37,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	c, err := cli.Subscribe(ctx, SubscribeNewBlock)
+	c, err := cli.Subscribe(ctx, pb.SubscriptionRequest_BLOCK)
 	assert.Nil(t, err)
 
 	go func() {
