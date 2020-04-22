@@ -40,7 +40,7 @@ type Client interface {
 	GetChainMeta() (*pb.ChainMeta, error)
 
 	//Get blocks of the specified block height range.
-	GetBlocks(offset uint64, length uint64) (*pb.GetBlocksResponse, error)
+	GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error)
 
 	//Obtain block information from BitXHub.
 	//The block header contains the basic information of the block,

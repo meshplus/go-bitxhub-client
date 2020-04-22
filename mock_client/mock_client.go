@@ -139,18 +139,18 @@ func (mr *MockClientMockRecorder) GetChainMeta() *gomock.Call {
 }
 
 // GetBlocks mocks base method
-func (m *MockClient) GetBlocks(offset, length uint64) (*pb.GetBlocksResponse, error) {
+func (m *MockClient) GetBlocks(start, end uint64) (*pb.GetBlocksResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBlocks", offset, length)
+	ret := m.ctrl.Call(m, "GetBlocks", start, end)
 	ret0, _ := ret[0].(*pb.GetBlocksResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBlocks indicates an expected call of GetBlocks
-func (mr *MockClientMockRecorder) GetBlocks(offset, length interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetBlocks(start, end interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), offset, length)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), start, end)
 }
 
 // GetBlock mocks base method
