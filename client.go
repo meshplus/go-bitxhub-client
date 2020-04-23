@@ -66,7 +66,7 @@ type Client interface {
 	GetMerkleWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.MerkleWrapper) error
 
 	//Subscribe to event notifications from BitXHub.
-	Subscribe(context.Context, SubscriptionType) (<-chan interface{}, error)
+	Subscribe(context.Context, pb.SubscriptionRequest_Type) (<-chan interface{}, error)
 
 	//Deploy the contract, the contract address will be returned when the deployment is successful.
 	DeployContract(contract []byte) (contractAddr types.Address, err error)

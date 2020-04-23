@@ -10,7 +10,6 @@ import (
 	crypto "github.com/meshplus/bitxhub-kit/crypto"
 	types "github.com/meshplus/bitxhub-kit/types"
 	pb "github.com/meshplus/bitxhub-model/pb"
-	go_bitxhub_client "github.com/meshplus/go-bitxhub-client"
 	reflect "reflect"
 )
 
@@ -258,7 +257,7 @@ func (mr *MockClientMockRecorder) GetMerkleWrapper(ctx, pid, begin, end, ch inte
 }
 
 // Subscribe mocks base method
-func (m *MockClient) Subscribe(arg0 context.Context, arg1 go_bitxhub_client.SubscriptionType) (<-chan interface{}, error) {
+func (m *MockClient) Subscribe(arg0 context.Context, arg1 pb.SubscriptionRequest_Type) (<-chan interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Subscribe", arg0, arg1)
 	ret0, _ := ret[0].(<-chan interface{})
