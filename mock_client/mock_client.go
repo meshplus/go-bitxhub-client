@@ -227,48 +227,47 @@ func (mr *MockClientMockRecorder) GetAccountBalance(address interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountBalance", reflect.TypeOf((*MockClient)(nil).GetAccountBalance), address)
 }
 
-// SyncMerkleWrapper mocks base method
-func (m *MockClient) SyncMerkleWrapper(ctx context.Context, id string, num uint64) (chan *pb.MerkleWrapper, error) {
+// GetBlockHeader mocks base method
+func (m *MockClient) GetBlockHeader(ctx context.Context, begin, end uint64, ch chan<- *pb.BlockHeader) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncMerkleWrapper", ctx, id, num)
-	ret0, _ := ret[0].(chan *pb.MerkleWrapper)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SyncMerkleWrapper indicates an expected call of SyncMerkleWrapper
-func (mr *MockClientMockRecorder) SyncMerkleWrapper(ctx, id, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncMerkleWrapper", reflect.TypeOf((*MockClient)(nil).SyncMerkleWrapper), ctx, id, num)
-}
-
-// GetMerkleWrapper mocks base method
-func (m *MockClient) GetMerkleWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.MerkleWrapper) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMerkleWrapper", ctx, pid, begin, end, ch)
+	ret := m.ctrl.Call(m, "GetBlockHeader", ctx, begin, end, ch)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetMerkleWrapper indicates an expected call of GetMerkleWrapper
-func (mr *MockClientMockRecorder) GetMerkleWrapper(ctx, pid, begin, end, ch interface{}) *gomock.Call {
+// GetBlockHeader indicates an expected call of GetBlockHeader
+func (mr *MockClientMockRecorder) GetBlockHeader(ctx, begin, end, ch interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMerkleWrapper", reflect.TypeOf((*MockClient)(nil).GetMerkleWrapper), ctx, pid, begin, end, ch)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockHeader", reflect.TypeOf((*MockClient)(nil).GetBlockHeader), ctx, begin, end, ch)
+}
+
+// GetInterchainTxWrapper mocks base method
+func (m *MockClient) GetInterchainTxWrapper(ctx context.Context, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetInterchainTxWrapper", ctx, begin, end, ch)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetInterchainTxWrapper indicates an expected call of GetInterchainTxWrapper
+func (mr *MockClientMockRecorder) GetInterchainTxWrapper(ctx, begin, end, ch interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainTxWrapper", reflect.TypeOf((*MockClient)(nil).GetInterchainTxWrapper), ctx, begin, end, ch)
 }
 
 // Subscribe mocks base method
-func (m *MockClient) Subscribe(arg0 context.Context, arg1 pb.SubscriptionRequest_Type) (<-chan interface{}, error) {
+func (m *MockClient) Subscribe(arg0 context.Context, arg1 pb.SubscriptionRequest_Type, arg2 []byte) (<-chan interface{}, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Subscribe", arg0, arg1)
+	ret := m.ctrl.Call(m, "Subscribe", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Subscribe indicates an expected call of Subscribe
-func (mr *MockClientMockRecorder) Subscribe(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Subscribe(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockClient)(nil).Subscribe), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockClient)(nil).Subscribe), arg0, arg1, arg2)
 }
 
 // DeployContract mocks base method

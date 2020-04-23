@@ -5,60 +5,15 @@ import (
 	"io"
 
 	"github.com/meshplus/bitxhub-model/pb"
-	"github.com/wonderivan/logger"
 )
 
-func (cli *ChainClient) SyncMerkleWrapper(ctx context.Context, id string, num uint64) (chan *pb.MerkleWrapper, error) {
-	c := make(chan *pb.MerkleWrapper, blockChanNumber)
-
-	grpcClient, err := cli.pool.getClient()
-	if err != nil {
-		return nil, err
-	}
-
-	syncClient, err := grpcClient.broker.SyncMerkleWrapper(ctx, &pb.SyncMerkleWrapperRequest{
-		AppchainId: id,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		defer close(c)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				resp, err := syncClient.Recv()
-				if err != nil {
-					cli.logger.Error(err)
-					return
-				}
-
-				m := &pb.MerkleWrapper{}
-				err = m.Unmarshal(resp.Data)
-				if err != nil {
-					logger.Error(err)
-					continue
-				}
-
-				c <- m
-			}
-		}
-	}()
-
-	return c, nil
-}
-
-func (cli *ChainClient) GetMerkleWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.MerkleWrapper) error {
+func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, ch chan<- *pb.BlockHeader) error {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return err
 	}
 
-	syncClient, err := grpcClient.broker.GetMerkleWrapper(ctx, &pb.GetMerkleWrapperRequest{
-		Pid:   pid,
+	syncClient, err := grpcClient.broker.GetBlockHeader(ctx, &pb.GetBlockHeaderRequest{
 		Begin: begin,
 		End:   end,
 	})
@@ -81,13 +36,45 @@ func (cli *ChainClient) GetMerkleWrapper(ctx context.Context, pid string, begin,
 					return
 				}
 
-				m := &pb.MerkleWrapper{}
-				err = m.Unmarshal(resp.Data)
+				ch <- resp
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (cli *ChainClient) GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return err
+	}
+
+	syncClient, err := grpcClient.broker.GetInterchainTxWrapper(ctx, &pb.GetInterchainTxWrapperRequest{
+		Begin: begin,
+		End:   end,
+		Pid: pid,
+	})
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer close(ch)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				resp, err := syncClient.Recv()
 				if err != nil {
+					if err != io.EOF {
+						cli.logger.Error(err)
+					}
 					return
 				}
 
-				ch <- m
+				ch <- resp
 			}
 		}
 	}()
