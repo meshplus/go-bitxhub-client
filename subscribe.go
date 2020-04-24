@@ -6,7 +6,7 @@ import (
 	"github.com/meshplus/bitxhub-model/pb"
 )
 
-func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionRequest_Type) (<-chan interface{}, error) {
+func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionRequest_Type, extra []byte) (<-chan interface{}, error) {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -14,6 +14,7 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 
 	req := &pb.SubscriptionRequest{
 		Type: typ,
+		Extra: extra,
 	}
 
 	subClient, err := grpcClient.broker.Subscribe(ctx, req)
@@ -40,27 +41,43 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 				case pb.SubscriptionRequest_BLOCK_HEADER:
 					header := &pb.BlockHeader{}
 					if err := header.Unmarshal(resp.Data); err != nil {
-						ret = resp.Data
+						cli.logger.Error("receive header error: ", resp.Data)
+						close(c)
+						return
 					}
 					ret = header
 				case pb.SubscriptionRequest_BLOCK:
 					block := &pb.Block{}
 					if err := block.Unmarshal(resp.Data); err != nil {
-						ret = resp.Data
+						cli.logger.Error("receive header error: ", resp.Data)
+						close(c)
+						return
 					}
 					ret = block
 				case pb.SubscriptionRequest_EVENT:
 					event := &pb.Event{}
 					if err := event.Unmarshal(resp.Data); err != nil {
-						ret = resp.Data
+						cli.logger.Error("receive event error: ", resp.Data)
+						close(c)
+						return
 					}
 					ret = event
 				case pb.SubscriptionRequest_INTERCHAIN_TX:
 					ibtp := &pb.IBTP{}
 					if err := ibtp.Unmarshal(resp.Data); err != nil {
-						ret = resp.Data
+						cli.logger.Error("receive interchain tx error: ", resp.Data)
+						close(c)
+						return
 					}
 					ret = ibtp
+				case pb.SubscriptionRequest_INTERCHAIN_TX_WRAPPER:
+					wrapper := &pb.InterchainTxWrapper{}
+					if err := wrapper.Unmarshal(resp.Data); err != nil {
+						cli.logger.Error("receive interchain tx wrapper error: ", resp.Data)
+						close(c)
+						return
+					}
+					ret = wrapper
 				default:
 					ret = resp.Data
 				}
