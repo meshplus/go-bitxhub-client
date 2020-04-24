@@ -2,7 +2,6 @@ package rpcx
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/meshplus/bitxhub-model/pb"
 
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +36,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	defer cancel()
 
 	c, err := cli.Subscribe(ctx, pb.SubscriptionRequest_BLOCK, nil)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	go func() {
 		tx := &pb.Transaction{
@@ -61,11 +59,10 @@ func TestChainClient_Subscribe(t *testing.T) {
 
 	for {
 		select {
-		case block := <-c:
-			if block == nil {
-				assert.Error(t, fmt.Errorf("channel is closed"))
-				return
-			}
+		case block, ok := <-c:
+			require.Equal(t, true, ok)
+			require.NotNil(t, block)
+
 			if err := cli.Stop(); err != nil {
 				return
 			}

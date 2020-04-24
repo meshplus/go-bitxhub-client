@@ -2,37 +2,35 @@ package rpcx
 
 import (
 	"context"
-	"fmt"
-	"github.com/meshplus/bitxhub-kit/crypto"
-	"github.com/meshplus/bitxhub-kit/types"
+	"io/ioutil"
 	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
+	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/pb"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
 	cli, privKey, from, to := prepareKeypair(t)
 
-	go send(t, cli, from, to, privKey)
+	sendNormal(t, cli, from, to, privKey)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	ch := make(chan *pb.BlockHeader)
-	assert.Nil(t, cli.GetBlockHeader(ctx, 1, 2, ch))
+	require.Nil(t, cli.GetBlockHeader(ctx, 1, 2, ch))
 
 	for {
 		select {
-		case header := <-ch:
-			if header == nil {
-				assert.Error(t, fmt.Errorf("channel is closed"))
-				return
-			}
+		case header, ok := <-ch:
+			require.Equal(t, true, ok)
+
+			require.Equal(t, header.Number, uint64(1))
 			if err := cli.Stop(); err != nil {
 				return
 			}
@@ -44,23 +42,25 @@ func TestChainClient_GetBlockHeader(t *testing.T) {
 }
 
 func TestChainClient_GetInterchainTxWrapper(t *testing.T) {
-	cli, privKey, from, to := prepareKeypair(t)
-
-	go send(t, cli, from, to, privKey)
+	cli, _, from, to := prepareKeypair(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	ch := make(chan *pb.InterchainTxWrapper)
-	assert.Nil(t, cli.GetInterchainTxWrapper(ctx,to.String(), 1, 2, ch))
+	sendInterchaintx(t, cli, from, to)
+
+	meta, err := cli.GetChainMeta()
+	require.Nil(t, err)
+
+	ch := make(chan *pb.InterchainTxWrapper, 10)
+	require.Nil(t, cli.GetInterchainTxWrapper(ctx, to.String(), meta.Height, meta.Height+100, ch))
 
 	for {
 		select {
-		case header := <-ch:
-			if header == nil {
-				assert.Error(t, fmt.Errorf("channel is closed"))
-				return
-			}
+		case wrapper, ok := <-ch:
+			require.Equal(t, true, ok)
+
+			require.NotNil(t, wrapper.TransactionHashes)
 			if err := cli.Stop(); err != nil {
 				return
 			}
@@ -71,7 +71,7 @@ func TestChainClient_GetInterchainTxWrapper(t *testing.T) {
 	}
 }
 
-func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to types.Address){
+func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to types.Address) {
 	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
 	require.Nil(t, err)
 	privKey1, err := asym.GenerateKey(asym.ECDSASecp256r1)
@@ -93,7 +93,7 @@ func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, 
 	return cli, privKey, from, to
 }
 
-func send(t *testing.T, cli *ChainClient, from, to types.Address, privKey crypto.PrivateKey) {
+func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey crypto.PrivateKey) {
 	tx := &pb.Transaction{
 		From: from,
 		To:   to,
@@ -104,10 +104,71 @@ func send(t *testing.T, cli *ChainClient, from, to types.Address, privKey crypto
 		Nonce:     rand.Int63(),
 	}
 
-	err := tx.Sign(privKey)
-	require.Nil(t, err)
+	require.Nil(t, tx.Sign(privKey))
 
 	hash, err := cli.SendTransaction(tx)
 	require.Nil(t, err)
 	require.EqualValues(t, 66, len(hash))
+}
+
+func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
+	// register and audit appchain
+	_, err := cli.InvokeBVMContract(
+		InterchainContractAddr,
+		"Register", String(""),
+		Int32(1), String("fabric"), String("fab"),
+		String("fabric"), String("1.0.0"),
+	)
+	require.Nil(t, err)
+
+	_, err = cli.InvokeBVMContract(
+		InterchainContractAddr,
+		"Audit", String(from.String()),
+		Int32(1), String("Audit passed"))
+	require.Nil(t, err)
+
+	deployRule(t, cli, from)
+
+	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN)
+
+	b, err := ibtp.Marshal()
+	require.Nil(t, err)
+
+	_, err = cli.InvokeContract(pb.TransactionData_BVM, InterchainContractAddr,
+		"HandleIBTP", Bytes(b))
+	require.Nil(t, err)
+}
+
+func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
+	contract, err := ioutil.ReadFile("./testdata/simple_rule.wasm")
+	require.Nil(t, err)
+
+	contractAddr, err := cli.DeployContract(contract)
+	require.Nil(t, err)
+
+	_, err = cli.InvokeBVMContract(
+		RuleManagerContractAddr,
+		"RegisterRule",
+		String(from.String()),
+		String(contractAddr.String()))
+	require.Nil(t, err)
+}
+
+func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type) *pb.IBTP {
+	pd := &pb.Payload{
+		SrcContractId: from,
+		DstContractId: to,
+		Func:          "set",
+		Args:          [][]byte{[]byte("Alice")},
+	}
+	ibtppd, err := pd.Marshal()
+	require.Nil(t, err)
+	return &pb.IBTP{
+		From:      from,
+		To:        to,
+		Payload:   ibtppd,
+		Index:     index,
+		Type:      typ,
+		Timestamp: time.Now().UnixNano(),
+	}
 }
