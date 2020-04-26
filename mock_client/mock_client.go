@@ -242,17 +242,17 @@ func (mr *MockClientMockRecorder) GetBlockHeader(ctx, begin, end, ch interface{}
 }
 
 // GetInterchainTxWrapper mocks base method
-func (m *MockClient) GetInterchainTxWrapper(ctx context.Context, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
+func (m *MockClient) GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetInterchainTxWrapper", ctx, begin, end, ch)
+	ret := m.ctrl.Call(m, "GetInterchainTxWrapper", ctx, pid, begin, end, ch)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // GetInterchainTxWrapper indicates an expected call of GetInterchainTxWrapper
-func (mr *MockClientMockRecorder) GetInterchainTxWrapper(ctx, begin, end, ch interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetInterchainTxWrapper(ctx, pid, begin, end, ch interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainTxWrapper", reflect.TypeOf((*MockClient)(nil).GetInterchainTxWrapper), ctx, begin, end, ch)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainTxWrapper", reflect.TypeOf((*MockClient)(nil).GetInterchainTxWrapper), ctx, pid, begin, end, ch)
 }
 
 // Subscribe mocks base method

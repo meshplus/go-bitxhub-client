@@ -53,7 +53,7 @@ func (cli *ChainClient) GetInterchainTxWrapper(ctx context.Context, pid string, 
 	syncClient, err := grpcClient.broker.GetInterchainTxWrapper(ctx, &pb.GetInterchainTxWrapperRequest{
 		Begin: begin,
 		End:   end,
-		Pid: pid,
+		Pid:   pid,
 	})
 	if err != nil {
 		return err
