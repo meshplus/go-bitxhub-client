@@ -61,6 +61,7 @@ func TestChainClient_GetInterchainTxWrapper(t *testing.T) {
 			require.Equal(t, true, ok)
 
 			require.NotNil(t, wrapper.TransactionHashes)
+			require.GreaterOrEqual(t, wrapper.Height, meta.Height)
 			if err := cli.Stop(); err != nil {
 				return
 			}
