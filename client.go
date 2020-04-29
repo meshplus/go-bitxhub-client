@@ -63,7 +63,7 @@ type Client interface {
 	GetBlockHeader(ctx context.Context, begin, end uint64, ch chan<- *pb.BlockHeader) error
 
 	//Get the missing block header from BitXHub.
-	GetInterchainTxWrapper(ctx context.Context,pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error
+	GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error
 
 	//Subscribe to event notifications from BitXHub.
 	Subscribe(context.Context, pb.SubscriptionRequest_Type, []byte) (<-chan interface{}, error)
