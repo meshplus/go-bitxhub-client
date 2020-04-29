@@ -13,7 +13,7 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 	}
 
 	req := &pb.SubscriptionRequest{
-		Type: typ,
+		Type:  typ,
 		Extra: extra,
 	}
 

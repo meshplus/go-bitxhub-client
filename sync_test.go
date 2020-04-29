@@ -156,11 +156,17 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 }
 
 func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type) *pb.IBTP {
-	pd := &pb.Payload{
+	content := pb.Content{
 		SrcContractId: from,
 		DstContractId: to,
 		Func:          "set",
 		Args:          [][]byte{[]byte("Alice")},
+	}
+	cData, err := content.Marshal()
+	require.Nil(t, err)
+	pd := &pb.Payload{
+		Encrypted: false,
+		Content:   cData,
 	}
 	ibtppd, err := pd.Marshal()
 	require.Nil(t, err)
