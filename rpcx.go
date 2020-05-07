@@ -18,6 +18,7 @@ var (
 	StoreContractAddr       = types.String2Address("000000000000000000000000000000000000000b")
 	RuleManagerContractAddr = types.String2Address("000000000000000000000000000000000000000c")
 	RoleContractAddr        = types.String2Address("000000000000000000000000000000000000000d")
+	AppchainMgrContractAddr = types.String2Address("000000000000000000000000000000000000000e")
 )
 
 const (
