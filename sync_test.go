@@ -115,7 +115,7 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey 
 func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	// register and audit appchain
 	_, err := cli.InvokeBVMContract(
-		InterchainContractAddr,
+		AppchainMgrContractAddr,
 		"Register", String(""),
 		Int32(1), String("fabric"), String("fab"),
 		String("fabric"), String("1.0.0"),
@@ -123,7 +123,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	require.Nil(t, err)
 
 	_, err = cli.InvokeBVMContract(
-		InterchainContractAddr,
+		AppchainMgrContractAddr,
 		"Audit", String(from.String()),
 		Int32(1), String("Audit passed"))
 	require.Nil(t, err)
