@@ -118,7 +118,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 		AppchainMgrContractAddr,
 		"Register", String(""),
 		Int32(1), String("fabric"), String("fab"),
-		String("fabric"), String("1.0.0"),
+		String("fabric"), String("1.0.0"), String(""),
 	)
 	require.Nil(t, err)
 

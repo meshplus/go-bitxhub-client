@@ -35,10 +35,15 @@ type Appchain struct {
 	Validators    string `json:"validators"`
 	ConsensusType int32  `json:"consensus_type"`
 	// 0 => registered, 1 => approved, -1 => rejected
-	Status               int32             `json:"status"`
-	ChainType            string            `json:"chain_type"`
-	Desc                 string            `json:"desc"`
-	Version              string            `json:"version"`
+	Status    int32  `json:"status"`
+	ChainType string `json:"chain_type"`
+	Desc      string `json:"desc"`
+	Version   string `json:"version"`
+	PublicKey string `json:"public_key"`
+}
+
+type Interchain struct {
+	ID                   string            `json:"id"`
 	InterchainCounter    map[string]uint64 `json:"interchain_counter,omitempty"`
 	ReceiptCounter       map[string]uint64 `json:"receipt_counter,omitempty"`
 	SourceReceiptCounter map[string]uint64 `json:"source_receipt_counter,omitempty"`
