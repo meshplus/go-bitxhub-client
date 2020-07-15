@@ -115,6 +115,10 @@ func (cli *ChainClient) Stop() error {
 	return cli.pool.Close()
 }
 
+func (cli *ChainClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
+	return cli.sendView(tx)
+}
+
 func (cli *ChainClient) SendTransaction(tx *pb.Transaction) (string, error) {
 	return cli.sendTransaction(tx)
 }
@@ -215,6 +219,33 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
 	}
 
 	return msg.TxHash, err
+}
+
+func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	req := &pb.SendTransactionRequest{
+		Version:   tx.Version,
+		From:      tx.From,
+		To:        tx.To,
+		Timestamp: tx.Timestamp,
+		Data:      tx.Data,
+		Nonce:     tx.Nonce,
+		Signature: tx.Signature,
+		Extra:     tx.Extra,
+	}
+
+	receipt, err := grpcClient.broker.SendView(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return receipt, nil
 }
 
 func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {

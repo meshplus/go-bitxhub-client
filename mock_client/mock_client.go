@@ -6,12 +6,11 @@ package mock_client
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	crypto "github.com/meshplus/bitxhub-kit/crypto"
 	types "github.com/meshplus/bitxhub-kit/types"
 	pb "github.com/meshplus/bitxhub-model/pb"
+	reflect "reflect"
 )
 
 // MockClient is a mock of Client interface
@@ -61,6 +60,21 @@ func (m *MockClient) SetPrivateKey(arg0 crypto.PrivateKey) {
 func (mr *MockClientMockRecorder) SetPrivateKey(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivateKey", reflect.TypeOf((*MockClient)(nil).SetPrivateKey), arg0)
+}
+
+// SendView mocks base method
+func (m *MockClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendView", tx)
+	ret0, _ := ret[0].(*pb.Receipt)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendView indicates an expected call of SendView
+func (mr *MockClientMockRecorder) SendView(tx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendView", reflect.TypeOf((*MockClient)(nil).SendView), tx)
 }
 
 // SendTransaction mocks base method

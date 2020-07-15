@@ -22,6 +22,10 @@ type Client interface {
 	//Reset ecdsa key.
 	SetPrivateKey(crypto.PrivateKey)
 
+	//Send a readonly transaction to BitXHub. If the transaction is writable,
+	// this transaction will not be executed and error wil be returned.
+	SendView(tx *pb.Transaction) (*pb.Receipt, error)
+
 	//Send a signed transaction to BitXHub. If the signature is illegal,
 	//the transaction hash will be obtained but the transaction receipt is illegal.
 	SendTransaction(tx *pb.Transaction) (string, error)
