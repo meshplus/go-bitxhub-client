@@ -262,6 +262,20 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	})
 }
 
+func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.Response, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return grpcClient.broker.GetAssetExchangeSigns(ctx, &pb.AssetExchangeSignsRequest{
+		Id: id,
+	})
+}
+
 func CheckReceipt(receipt *pb.Receipt) bool {
 	return receipt.Status == pb.Receipt_SUCCESS
 }
