@@ -359,3 +359,18 @@ func (mr *MockClientMockRecorder) InvokeXVMContract(address, method interface{},
 	varargs := append([]interface{}{address, method}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeXVMContract", reflect.TypeOf((*MockClient)(nil).InvokeXVMContract), varargs...)
 }
+
+// GetAssetExchangeSigns mocks base method
+func (m *MockClient) GetAssetExchangeSigns(id string) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAssetExchangeSigns", id)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAssetExchangeSigns indicates an expected call of GetAssetExchangeSigns
+func (mr *MockClientMockRecorder) GetAssetExchangeSigns(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssetExchangeSigns", reflect.TypeOf((*MockClient)(nil).GetAssetExchangeSigns), id)
+}
