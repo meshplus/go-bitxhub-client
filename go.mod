@@ -7,7 +7,7 @@ require (
 	github.com/docker/docker v1.13.1
 	github.com/golang/mock v1.1.1
 	github.com/meshplus/bitxhub-kit v1.0.0
-	github.com/meshplus/bitxhub-model v1.0.0-rc4.0.20200727092616-7a2b838ab1ab
+	github.com/meshplus/bitxhub-model v1.0.0-rc4.0.20200730072219-49561408ef50
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/grpc v1.27.1
