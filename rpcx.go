@@ -264,7 +264,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	})
 }
 
-func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.Response, error) {
+func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
 	defer cancel()
 

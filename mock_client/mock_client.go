@@ -361,10 +361,10 @@ func (mr *MockClientMockRecorder) InvokeXVMContract(address, method interface{},
 }
 
 // GetAssetExchangeSigns mocks base method
-func (m *MockClient) GetAssetExchangeSigns(id string) (*pb.Response, error) {
+func (m *MockClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAssetExchangeSigns", id)
-	ret0, _ := ret[0].(*pb.Response)
+	ret0, _ := ret[0].(*pb.SignResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
