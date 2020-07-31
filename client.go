@@ -86,5 +86,5 @@ type Client interface {
 	InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error)
 
 	// Get BitXHub's signatures of asset exchange status specified by id.
-	GetAssetExchangeSigns(id string) (*pb.Response, error)
+	GetAssetExchangeSigns(id string) (*pb.SignResponse, error)
 }

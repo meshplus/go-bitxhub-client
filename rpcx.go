@@ -14,11 +14,13 @@ import (
 )
 
 var (
-	InterchainContractAddr  = types.String2Address("000000000000000000000000000000000000000a")
-	StoreContractAddr       = types.String2Address("000000000000000000000000000000000000000b")
-	RuleManagerContractAddr = types.String2Address("000000000000000000000000000000000000000c")
-	RoleContractAddr        = types.String2Address("000000000000000000000000000000000000000d")
-	AppchainMgrContractAddr = types.String2Address("000000000000000000000000000000000000000e")
+	InterchainContractAddr     = types.String2Address("000000000000000000000000000000000000000a")
+	StoreContractAddr          = types.String2Address("000000000000000000000000000000000000000b")
+	RuleManagerContractAddr    = types.String2Address("000000000000000000000000000000000000000c")
+	RoleContractAddr           = types.String2Address("000000000000000000000000000000000000000d")
+	AppchainMgrContractAddr    = types.String2Address("000000000000000000000000000000000000000e")
+	TransactionMgrContractAddr = types.String2Address("000000000000000000000000000000000000000f")
+	AssetExchangeContractAddr  = types.String2Address("0000000000000000000000000000000000000010")
 )
 
 const (
@@ -262,7 +264,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	})
 }
 
-func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.Response, error) {
+func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
 	defer cancel()
 
