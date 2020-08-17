@@ -256,18 +256,18 @@ func (mr *MockClientMockRecorder) GetBlockHeader(ctx, begin, end, ch interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockHeader", reflect.TypeOf((*MockClient)(nil).GetBlockHeader), ctx, begin, end, ch)
 }
 
-// GetInterchainTxWrapper mocks base method
-func (m *MockClient) GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
+// GetInterchainTxWrappers mocks base method
+func (m *MockClient) GetInterchainTxWrappers(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrappers) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetInterchainTxWrapper", ctx, pid, begin, end, ch)
+	ret := m.ctrl.Call(m, "GetInterchainTxWrappers", ctx, pid, begin, end, ch)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetInterchainTxWrapper indicates an expected call of GetInterchainTxWrapper
-func (mr *MockClientMockRecorder) GetInterchainTxWrapper(ctx, pid, begin, end, ch interface{}) *gomock.Call {
+// GetInterchainTxWrappers indicates an expected call of GetInterchainTxWrappers
+func (mr *MockClientMockRecorder) GetInterchainTxWrappers(ctx, pid, begin, end, ch interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainTxWrapper", reflect.TypeOf((*MockClient)(nil).GetInterchainTxWrapper), ctx, pid, begin, end, ch)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInterchainTxWrappers", reflect.TypeOf((*MockClient)(nil).GetInterchainTxWrappers), ctx, pid, begin, end, ch)
 }
 
 // Subscribe mocks base method
@@ -298,6 +298,26 @@ func (m *MockClient) DeployContract(contract []byte) (types.Address, error) {
 func (mr *MockClientMockRecorder) DeployContract(contract interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployContract", reflect.TypeOf((*MockClient)(nil).DeployContract), contract)
+}
+
+// GenerateContractTx mocks base method
+func (m *MockClient) GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{vmType, address, method}
+	for _, a := range args {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GenerateContractTx", varargs...)
+	ret0, _ := ret[0].(*pb.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateContractTx indicates an expected call of GenerateContractTx
+func (mr *MockClientMockRecorder) GenerateContractTx(vmType, address, method interface{}, args ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{vmType, address, method}, args...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateContractTx", reflect.TypeOf((*MockClient)(nil).GenerateContractTx), varargs...)
 }
 
 // InvokeContract mocks base method

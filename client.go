@@ -67,13 +67,16 @@ type Client interface {
 	GetBlockHeader(ctx context.Context, begin, end uint64, ch chan<- *pb.BlockHeader) error
 
 	//Get the missing block header from BitXHub.
-	GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error
+	GetInterchainTxWrappers(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrappers) error
 
 	//Subscribe to event notifications from BitXHub.
 	Subscribe(context.Context, pb.SubscriptionRequest_Type, []byte) (<-chan interface{}, error)
 
 	//Deploy the contract, the contract address will be returned when the deployment is successful.
 	DeployContract(contract []byte) (contractAddr types.Address, err error)
+
+	//GenerateContractTx generates signed transaction to invoke contract
+	GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error)
 
 	//Call the contract according to the contract type, contract address,
 	//contract method, and contract method parameters

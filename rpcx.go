@@ -59,6 +59,8 @@ type ChainClient struct {
 	pool       *ConnectionPool
 }
 
+
+
 func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
