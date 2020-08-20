@@ -380,17 +380,17 @@ func (mr *MockClientMockRecorder) InvokeXVMContract(address, method interface{},
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeXVMContract", reflect.TypeOf((*MockClient)(nil).InvokeXVMContract), varargs...)
 }
 
-// GetAssetExchangeSigns mocks base method
-func (m *MockClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, error) {
+// GetMultiSigns mocks base method
+func (m *MockClient) GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAssetExchangeSigns", id)
+	ret := m.ctrl.Call(m, "GetMultiSigns", id, typ)
 	ret0, _ := ret[0].(*pb.SignResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAssetExchangeSigns indicates an expected call of GetAssetExchangeSigns
-func (mr *MockClientMockRecorder) GetAssetExchangeSigns(id interface{}) *gomock.Call {
+// GetMultiSigns indicates an expected call of GetMultiSigns
+func (mr *MockClientMockRecorder) GetMultiSigns(id, typ interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssetExchangeSigns", reflect.TypeOf((*MockClient)(nil).GetAssetExchangeSigns), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiSigns", reflect.TypeOf((*MockClient)(nil).GetMultiSigns), id, typ)
 }

@@ -88,6 +88,6 @@ type Client interface {
 	//Invoke the XVM contract, XVM is WebAssembly contract.
 	InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error)
 
-	// Get BitXHub's signatures of asset exchange status specified by id.
-	GetAssetExchangeSigns(id string) (*pb.SignResponse, error)
+	// Get BitXHub's signatures specified by id and type.
+	GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error)
 }
