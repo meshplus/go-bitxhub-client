@@ -87,3 +87,40 @@ func (cli *ChainClient) InvokeBVMContract(address types.Address, method string, 
 func (cli *ChainClient) InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
 	return cli.InvokeContract(pb.TransactionData_XVM, address, method, args...)
 }
+
+func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+	from, err := cli.privateKey.PublicKey().Address()
+	if err != nil {
+		return nil, err
+	}
+
+	pl := &pb.InvokePayload{
+		Method: method,
+		Args:   args[:],
+	}
+
+	data, err := pl.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	td := &pb.TransactionData{
+		Type:    pb.TransactionData_INVOKE,
+		VmType:  vmType,
+		Payload: data,
+	}
+
+	tx := &pb.Transaction{
+		From:      from,
+		To:        address,
+		Data:      td,
+		Timestamp: time.Now().UnixNano(),
+		Nonce:     rand.Int63(),
+	}
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return nil, fmt.Errorf("tx sign: %w", err)
+	}
+
+	return tx, nil
+}

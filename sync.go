@@ -44,13 +44,13 @@ func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, c
 	return nil
 }
 
-func (cli *ChainClient) GetInterchainTxWrapper(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrapper) error {
+func (cli *ChainClient) GetInterchainTxWrappers(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrappers) error {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return err
 	}
 
-	syncClient, err := grpcClient.broker.GetInterchainTxWrapper(ctx, &pb.GetInterchainTxWrapperRequest{
+	syncClient, err := grpcClient.broker.GetInterchainTxWrappers(ctx, &pb.GetInterchainTxWrappersRequest{
 		Begin: begin,
 		End:   end,
 		Pid:   pid,

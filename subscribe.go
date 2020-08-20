@@ -78,6 +78,14 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 						return
 					}
 					ret = wrapper
+				case pb.SubscriptionRequest_UNION_INTERCHAIN_TX_WRAPPER:
+					wrapper := &pb.InterchainTxWrappers{}
+					if err := wrapper.Unmarshal(resp.Data); err != nil {
+						cli.logger.Error("receive interchain tx wrapper error: ", resp.Data)
+						close(c)
+						return
+					}
+					ret = wrapper
 				default:
 					ret = resp.Data
 				}

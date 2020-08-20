@@ -41,7 +41,7 @@ func TestChainClient_GetBlockHeader(t *testing.T) {
 	}
 }
 
-func TestChainClient_GetInterchainTxWrapper(t *testing.T) {
+func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	cli, _, from, to := prepareKeypair(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,15 +52,16 @@ func TestChainClient_GetInterchainTxWrapper(t *testing.T) {
 	meta, err := cli.GetChainMeta()
 	require.Nil(t, err)
 
-	ch := make(chan *pb.InterchainTxWrapper, 10)
-	require.Nil(t, cli.GetInterchainTxWrapper(ctx, to.String(), meta.Height, meta.Height+100, ch))
+	ch := make(chan *pb.InterchainTxWrappers, 10)
+	require.Nil(t, cli.GetInterchainTxWrappers(ctx, to.String(), meta.Height, meta.Height+100, ch))
 
 	for {
 		select {
-		case wrapper, ok := <-ch:
+		case wrappers, ok := <-ch:
 			require.Equal(t, true, ok)
 
-			require.NotNil(t, wrapper.TransactionHashes)
+			require.NotNil(t, wrappers.InterchainTxWrappers[0])
+			wrapper := wrappers.InterchainTxWrappers[0]
 			require.GreaterOrEqual(t, wrapper.Height, meta.Height)
 			if err := cli.Stop(); err != nil {
 				return
