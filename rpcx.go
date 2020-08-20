@@ -266,7 +266,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	})
 }
 
-func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, error) {
+func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
 	defer cancel()
 
@@ -275,8 +275,9 @@ func (cli *ChainClient) GetAssetExchangeSigns(id string) (*pb.SignResponse, erro
 		return nil, err
 	}
 
-	return grpcClient.broker.GetAssetExchangeSigns(ctx, &pb.AssetExchangeSignsRequest{
-		Id: id,
+	return grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
+		Content: content,
+		Type: typ,
 	})
 }
 
