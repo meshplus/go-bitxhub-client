@@ -74,9 +74,9 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 }
 
 func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to types.Address) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
-	privKey1, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	cli, err = New(

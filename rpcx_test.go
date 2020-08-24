@@ -27,10 +27,10 @@ var (
 )
 
 func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
-	privKey1, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	cli, err := New(
@@ -72,7 +72,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 }
 
 func TestChainClient_SendView(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	cli, err := New(
@@ -131,10 +131,10 @@ func TestChainClient_SendView(t *testing.T) {
 }
 
 func TestChainClient_GetTransaction(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
-	privKey1, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	cli, err := New(
@@ -190,7 +190,7 @@ func TestChainClient_GetNetworkMeta(t *testing.T) {
 }
 
 func TestChainClient_GetAccountBalance(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	cli, err := New(

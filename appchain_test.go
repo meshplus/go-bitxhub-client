@@ -3,12 +3,12 @@ package rpcx
 import (
 	"encoding/hex"
 	"encoding/json"
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"path/filepath"
 	"testing"
 
 	"github.com/docker/docker/pkg/testutil/assert"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
-	"github.com/meshplus/bitxhub-kit/key"
 	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -21,7 +21,7 @@ const (
 var AppChainID string
 
 func TestAppChain_Register(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 	var cfg = &config{
 		addrs: []string{
@@ -72,16 +72,15 @@ func testAppChain_Aduit(t *testing.T) {
 // getAdminCli returns client with admin account.
 func getAdminCli(t *testing.T) *ChainClient {
 	// you should put your bitxhub/scripts/build/node1/key.json to testdata/key.json.
-	k, err := key.LoadKey(filepath.Join("testdata", "key.json"))
-	require.Nil(t, err)
-	privKey, err := k.GetPrivateKey(keyPassword)
+
+	k, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), keyPassword)
 	require.Nil(t, err)
 	var cfg = &config{
 		addrs: []string{
 			"localhost:60011",
 		},
 		logger:     logrus.New(),
-		privateKey: privKey,
+		privateKey: k,
 	}
 	cli, err := New(
 		WithAddrs(cfg.addrs),
