@@ -1,6 +1,7 @@
 package rpcx
 
 import (
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"testing"
 
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
@@ -33,7 +34,7 @@ func TestChainClient_GetBlocks(t *testing.T) {
 }
 
 func Cli() (*ChainClient, error) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	if err != nil {
 		return nil, err
 	}

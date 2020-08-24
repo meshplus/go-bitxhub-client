@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"math/rand"
 	"testing"
 	"time"
@@ -13,10 +14,10 @@ import (
 )
 
 func TestChainClient_Subscribe(t *testing.T) {
-	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
-	privKey1, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
 	from, err := privKey.PublicKey().Address()
