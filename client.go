@@ -39,6 +39,9 @@ type Client interface {
 	//Get the current blockchain situation of BitXHub.
 	GetChainMeta() (*pb.ChainMeta, error)
 
+	//Check whethe there is a master pier connect to the BitXHub.
+	CheckMasterPier(address string) (*pb.Response, error)
+
 	//Get blocks of the specified block height range.
 	GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error)
 
