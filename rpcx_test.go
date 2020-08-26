@@ -20,6 +20,13 @@ var cfg = &config{
 	logger: logrus.New(),
 }
 
+var cfg1 = &config{
+	addrs: []string{
+		"localhost:60012",
+	},
+	logger: logrus.New(),
+}
+
 func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
 	require.Nil(t, err)

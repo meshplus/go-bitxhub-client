@@ -42,6 +42,12 @@ type Client interface {
 	//Check whethe there is a master pier connect to the BitXHub.
 	CheckMasterPier(address string) (*pb.Response, error)
 
+	//Set the master pier connect to the BitXHub.
+	SetMasterPier(address string, index string, timeout int64) (*pb.Response, error)
+
+	//Update the master pier status
+	HeartBeat(address string, index string) (*pb.Response, error)
+
 	//Get blocks of the specified block height range.
 	GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error)
 

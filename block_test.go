@@ -45,3 +45,17 @@ func Cli() (*ChainClient, error) {
 	)
 	return cli, err
 }
+
+func Cli1() (*ChainClient, error) {
+	privKey, err := asym.GenerateKey(asym.ECDSASecp256r1)
+	if err != nil {
+		return nil, err
+	}
+
+	cli, err := New(
+		WithAddrs(cfg1.addrs),
+		WithLogger(cfg1.logger),
+		WithPrivateKey(privKey),
+	)
+	return cli, err
+}

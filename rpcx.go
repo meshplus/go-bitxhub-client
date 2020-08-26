@@ -27,7 +27,7 @@ const (
 	GetReceiptTimeout        = 2 * time.Second
 	GetAccountBalanceTimeout = 2 * time.Second
 	GetInfoTimeout           = 2 * time.Second
-	CheckPierTimeout         = 2 * time.Second
+	CheckPierTimeout         = 60 * time.Second
 )
 
 type Appchain struct {

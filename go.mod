@@ -6,7 +6,7 @@ require (
 	github.com/Rican7/retry v0.1.0
 	github.com/golang/mock v1.1.1
 	github.com/meshplus/bitxhub-kit v1.0.0
-	github.com/meshplus/bitxhub-model v1.0.0-rc4.0.20200825125804-a64eb88046d7
+	github.com/meshplus/bitxhub-model v1.0.0-rc4.0.20200831014640-3348f8eae43c
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 	google.golang.org/grpc v1.27.1
