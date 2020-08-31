@@ -71,7 +71,7 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					}
 					ret = ibtp
 				case pb.SubscriptionRequest_INTERCHAIN_TX_WRAPPER:
-					wrapper := &pb.InterchainTxWrapper{}
+					wrapper := &pb.InterchainTxWrappers{}
 					if err := wrapper.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive interchain tx wrapper error: ", resp.Data)
 						close(c)
