@@ -57,9 +57,11 @@ type Interchain struct {
 var _ Client = (*ChainClient)(nil)
 
 type ChainClient struct {
-	privateKey crypto.PrivateKey
-	logger     Logger
-	pool       *ConnectionPool
+	privateKey  crypto.PrivateKey
+	logger      Logger
+	pool        *ConnectionPool
+	normalSeqNo int64
+	ibtpSeqNo   int64
 }
 
 func (cli *ChainClient) GetValidators() (*pb.Response, error) {
@@ -124,12 +126,12 @@ func (cli *ChainClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
 	return cli.sendView(tx)
 }
 
-func (cli *ChainClient) SendTransaction(tx *pb.Transaction) (string, error) {
-	return cli.sendTransaction(tx)
+func (cli *ChainClient) SendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	return cli.sendTransaction(tx, opts)
 }
 
-func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error) {
-	return cli.sendTransactionWithReceipt(tx)
+func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
 // GetReceipts get receipts by tx hashes
@@ -186,8 +188,8 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	return grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
 }
 
-func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error) {
-	hash, err := cli.sendTransaction(tx)
+func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	hash, err := cli.sendTransaction(tx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("send tx error: %s", err)
 	}
@@ -199,7 +201,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction) (*pb.Rece
 	return receipt, nil
 }
 
-func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
+func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
@@ -280,6 +282,18 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 		Content: content,
 		Type:    typ,
 	})
+}
+
+func (cli *ChainClient) PendingNonceAt(account string) (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	//return grpcClient.broker.PendingNonceAt(ctx, account)
 }
 
 func CheckReceipt(receipt *pb.Receipt) bool {
