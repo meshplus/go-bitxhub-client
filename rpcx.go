@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -26,9 +27,11 @@ var (
 const (
 	GetTransactionTimeout    = 10 * time.Second
 	SendTransactionTimeout   = 10 * time.Second
+	SendMultiSignsTimeout    = 10 * time.Second
 	GetReceiptTimeout        = 2 * time.Second
 	GetAccountBalanceTimeout = 2 * time.Second
 	GetInfoTimeout           = 2 * time.Second
+	GetTPSTimeout            = 2 * time.Second
 )
 
 type Appchain struct {
@@ -58,8 +61,6 @@ type ChainClient struct {
 	logger     Logger
 	pool       *ConnectionPool
 }
-
-
 
 func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
@@ -212,7 +213,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
 		To:        tx.To,
 		Timestamp: tx.Timestamp,
 		Data:      tx.Data,
-		Nonce:     tx.Nonce,
+		Nonce:     int64(tx.Nonce),
 		Signature: tx.Signature,
 		Extra:     tx.Extra,
 	}
@@ -239,7 +240,7 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 		To:        tx.To,
 		Timestamp: tx.Timestamp,
 		Data:      tx.Data,
-		Nonce:     tx.Nonce,
+		Nonce:     int64(tx.Nonce),
 		Signature: tx.Signature,
 		Extra:     tx.Extra,
 	}
@@ -267,7 +268,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 }
 
 func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), SendMultiSignsTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -277,10 +278,35 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 
 	return grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
 		Content: content,
-		Type: typ,
+		Type:    typ,
 	})
 }
 
 func CheckReceipt(receipt *pb.Receipt) bool {
 	return receipt.Status == pb.Receipt_SUCCESS
+}
+
+func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetTPSTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := grpcClient.broker.GetTPS(ctx, &pb.GetTPSRequest{
+		Begin: begin,
+		End:   end,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	if resp == nil || resp.Data == nil {
+		return 0, fmt.Errorf("empty response")
+	}
+
+	return binary.LittleEndian.Uint64(resp.Data), nil
 }

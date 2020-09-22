@@ -53,7 +53,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	err = tx.Sign(privKey)
@@ -157,7 +157,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	err = tx.Sign(privKey)
@@ -206,6 +206,52 @@ func TestChainClient_GetAccountBalance(t *testing.T) {
 	require.NotNil(t, res)
 }
 
+func TestChainClient_GetTPS(t *testing.T) {
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	require.Nil(t, err)
+
+	cli, err := New(
+		WithAddrs(cfg.addrs),
+		WithLogger(cfg.logger),
+		WithPrivateKey(privKey),
+	)
+	require.Nil(t, err)
+
+	tx, err := genContractTransaction(pb.TransactionData_BVM, privKey,
+		types.String2Address(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
+	require.Nil(t, err)
+
+	err = tx.Sign(privKey)
+	require.Nil(t, err)
+
+	_, err = cli.sendTransactionWithReceipt(tx)
+	require.Nil(t, err)
+
+	meta0, err := cli.GetChainMeta()
+	require.Nil(t, err)
+
+	for i := 0; i < 10; i++ {
+		tx, err = genContractTransaction(pb.TransactionData_BVM, privKey,
+			types.String2Address(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
+		require.Nil(t, err)
+
+		err = tx.Sign(privKey)
+		require.Nil(t, err)
+
+		_, err = cli.sendTransaction(tx)
+		require.Nil(t, err)
+	}
+
+	time.Sleep(time.Second)
+
+	meta1, err := cli.GetChainMeta()
+	require.Nil(t, err)
+
+	res, err := cli.GetTPS(meta0.Height, meta1.Height)
+	require.Nil(t, err)
+	require.True(t, res > 0)
+}
+
 func genContractTransaction(
 	vmType pb.TransactionData_VMType, privateKey crypto.PrivateKey,
 	address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
@@ -235,7 +281,7 @@ func genContractTransaction(
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(privateKey); err != nil {

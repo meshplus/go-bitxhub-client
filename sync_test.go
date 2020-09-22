@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"crypto/sha256"
 	"io/ioutil"
 	"math/rand"
 	"testing"
@@ -103,7 +104,7 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey 
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	require.Nil(t, tx.Sign(privKey))
@@ -114,12 +115,21 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey 
 }
 
 func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
+	validators, err := ioutil.ReadFile("./testdata/single_validator")
+	require.Nil(t, err)
+
+	proof, err := ioutil.ReadFile("./testdata/proof_1.0.0_rc")
+	require.Nil(t, err)
+
+	pubKey, err := cli.privateKey.PublicKey().Bytes()
+	require.Nil(t, err)
+
 	// register and audit appchain
-	_, err := cli.InvokeBVMContract(
+	_, err = cli.InvokeBVMContract(
 		AppchainMgrContractAddr,
-		"Register", String(""),
+		"Register", String(string(validators)),
 		Int32(1), String("fabric"), String("fab"),
-		String("fabric"), String("1.0.0"), String(""),
+		String("fabric"), String("1.0.0"), String(string(pubKey)),
 	)
 	require.Nil(t, err)
 
@@ -129,15 +139,41 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 		Int32(1), String("Audit passed"))
 	require.Nil(t, err)
 
-	deployRule(t, cli, from)
+	ruleAddr := "0x00000000000000000000000000000000000000a1"
+	_, err = cli.InvokeContract(pb.TransactionData_BVM, RuleManagerContractAddr, "RegisterRule", String(from.String()), String(ruleAddr))
 
-	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN)
+	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN, proof)
 
 	b, err := ibtp.Marshal()
 	require.Nil(t, err)
 
-	_, err = cli.InvokeContract(pb.TransactionData_BVM, InterchainContractAddr,
-		"HandleIBTP", Bytes(b))
+	pl := &pb.InvokePayload{
+		Method: "HandleIBTP",
+		Args:   []*pb.Arg{Bytes(b)}[:],
+	}
+
+	data, err := pl.Marshal()
+	require.Nil(t, err)
+
+	td := &pb.TransactionData{
+		Type:    pb.TransactionData_INVOKE,
+		VmType:  pb.TransactionData_BVM,
+		Payload: data,
+	}
+
+	tx := &pb.Transaction{
+		From:      from,
+		To:        InterchainContractAddr,
+		Data:      td,
+		Timestamp: time.Now().UnixNano(),
+		Nonce:     uint64(rand.Int63()),
+		Extra:     proof,
+	}
+
+	err = tx.Sign(cli.privateKey)
+	require.Nil(t, err)
+
+	_, err = cli.sendTransactionWithReceipt(tx)
 	require.Nil(t, err)
 }
 
@@ -156,21 +192,25 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 	require.Nil(t, err)
 }
 
-func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type) *pb.IBTP {
-	content := pb.Content{
-		SrcContractId: from,
-		DstContractId: to,
-		Func:          "set",
-		Args:          [][]byte{[]byte("Alice")},
+func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
+	content := &pb.Content{
+		SrcContractId: "mychannel&transfer",
+		DstContractId: "mychannel&transfer",
+		Func:          "interchainCharge",
+		Args:          [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
+		Callback:      "interchainConfirm",
 	}
-	cData, err := content.Marshal()
-	require.Nil(t, err)
-	pd := &pb.Payload{
+
+	bytes, _ := content.Marshal()
+
+	payload := &pb.Payload{
 		Encrypted: false,
-		Content:   cData,
+		Content:   bytes,
 	}
-	ibtppd, err := pd.Marshal()
-	require.Nil(t, err)
+
+	ibtppd, _ := payload.Marshal()
+	proofHash := sha256.Sum256(proof)
+
 	return &pb.IBTP{
 		From:      from,
 		To:        to,
@@ -178,5 +218,6 @@ func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type) *pb.
 		Index:     index,
 		Type:      typ,
 		Timestamp: time.Now().UnixNano(),
+		Proof:     proofHash[:],
 	}
 }
