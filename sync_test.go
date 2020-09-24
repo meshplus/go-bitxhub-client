@@ -3,6 +3,7 @@ package rpcx
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"testing"
@@ -104,12 +105,11 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey 
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
-	require.Nil(t, tx.Sign(privKey))
+	//require.Nil(t, tx.Sign(privKey))
 
-	hash, err := cli.SendTransaction(tx)
+	hash, err := cli.SendTransaction(tx, nil)
 	require.Nil(t, err)
 	require.EqualValues(t, 66, len(hash))
 }
@@ -127,7 +127,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	// register and audit appchain
 	_, err = cli.InvokeBVMContract(
 		AppchainMgrContractAddr,
-		"Register", String(string(validators)),
+		"Register", nil, String(string(validators)),
 		Int32(1), String("fabric"), String("fab"),
 		String("fabric"), String("1.0.0"), String(string(pubKey)),
 	)
@@ -135,18 +135,24 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 
 	_, err = cli.InvokeBVMContract(
 		AppchainMgrContractAddr,
-		"Audit", String(from.String()),
+		"Audit", nil, String(from.String()),
 		Int32(1), String("Audit passed"))
 	require.Nil(t, err)
 
 	ruleAddr := "0x00000000000000000000000000000000000000a1"
-	_, err = cli.InvokeContract(pb.TransactionData_BVM, RuleManagerContractAddr, "RegisterRule", String(from.String()), String(ruleAddr))
+	_, err = cli.InvokeContract(pb.TransactionData_BVM, RuleManagerContractAddr,
+		"RegisterRule", nil, String(from.String()), String(ruleAddr))
 
 	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN, proof)
 
 	b, err := ibtp.Marshal()
 	require.Nil(t, err)
 
+	_, err = cli.InvokeContract(pb.TransactionData_BVM, InterchainContractAddr,
+		"HandleIBTP", &TransactOpts{
+			From:      ibtpAccount(ibtp),
+			IBTPNonce: ibtp.Index,
+		}, Bytes(b))
 	pl := &pb.InvokePayload{
 		Method: "HandleIBTP",
 		Args:   []*pb.Arg{Bytes(b)}[:],
@@ -173,7 +179,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	err = tx.Sign(cli.privateKey)
 	require.Nil(t, err)
 
-	_, err = cli.sendTransactionWithReceipt(tx)
+	_, err = cli.sendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
 }
 
@@ -181,12 +187,12 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 	contract, err := ioutil.ReadFile("./testdata/simple_rule.wasm")
 	require.Nil(t, err)
 
-	contractAddr, err := cli.DeployContract(contract)
+	contractAddr, err := cli.DeployContract(contract, nil)
 	require.Nil(t, err)
 
 	_, err = cli.InvokeBVMContract(
 		RuleManagerContractAddr,
-		"RegisterRule",
+		"RegisterRule", nil,
 		String(from.String()),
 		String(contractAddr.String()))
 	require.Nil(t, err)
@@ -220,4 +226,8 @@ func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proo
 		Timestamp: time.Now().UnixNano(),
 		Proof:     proofHash[:],
 	}
+}
+
+func ibtpAccount(ibtp *pb.IBTP) string {
+	return fmt.Sprintf("%s-%s", ibtp.From, ibtp.To)
 }

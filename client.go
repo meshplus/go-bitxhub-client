@@ -94,12 +94,13 @@ type Client interface {
 	// Get BitXHub TPS during block [begin, end]
 	GetTPS(begin, end uint64) (uint64, error)
 
-	// PendingNonceAt returns the latest nonce of an account in the pending status,
+	// GetPendingNonceByAccount returns the latest nonce of an account in the pending status,
 	// and it should be the nonce for next transaction
-	PendingNonceAt(account string) (uint64, error)
+	GetPendingNonceByAccount(account string) (uint64, error)
 }
 
 type TransactOpts struct {
+	From        string
 	NormalNonce uint64
 	IBTPNonce   uint64
 }

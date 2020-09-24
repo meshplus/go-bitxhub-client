@@ -2,7 +2,6 @@ package rpcx
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/meshplus/bitxhub-kit/types"
@@ -26,11 +25,6 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 		From:      from,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
-	}
-
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return types.Address{}, fmt.Errorf("tx sign: %w", err)
 	}
 
 	receipt, err := cli.sendTransactionWithReceipt(tx, opts)
@@ -74,10 +68,6 @@ func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address
 		Timestamp: time.Now().UnixNano(),
 	}
 
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return nil, fmt.Errorf("tx sign: %w", err)
-	}
-
 	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
@@ -115,7 +105,6 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(cli.privateKey); err != nil {

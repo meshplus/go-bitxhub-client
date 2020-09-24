@@ -2,14 +2,12 @@ package rpcx
 
 import (
 	"context"
-	"github.com/meshplus/bitxhub-kit/crypto"
-	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/meshplus/bitxhub-model/pb"
-
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
+	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,13 +45,12 @@ func TestChainClient_Subscribe(t *testing.T) {
 				Amount: 10,
 			},
 			Timestamp: time.Now().UnixNano(),
-			Nonce:     uint64(rand.Int63()),
 		}
 
 		err = tx.Sign(privKey)
 		require.Nil(t, err)
 
-		hash, err := cli.SendTransaction(tx)
+		hash, err := cli.SendTransaction(tx, nil)
 		require.Nil(t, err)
 		require.EqualValues(t, 66, len(hash))
 	}()

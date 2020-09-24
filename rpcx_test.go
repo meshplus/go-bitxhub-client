@@ -53,13 +53,12 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
 	err = tx.Sign(privKey)
 	require.Nil(t, err)
 
-	hash, err := cli.SendTransaction(tx)
+	hash, err := cli.SendTransaction(tx, nil)
 	require.Nil(t, err)
 
 	ret, err := cli.GetReceipt(hash)
@@ -110,7 +109,7 @@ func TestChainClient_SendView(t *testing.T) {
 	require.NotEqual(t, value, string(receipt.Ret))
 
 	// test sending write-ledger tx to SendTransaction api
-	hash, err := cli.SendTransaction(tx)
+	hash, err := cli.SendTransaction(tx, nil)
 	require.Nil(t, err)
 
 	ret, err := cli.GetReceipt(hash)
@@ -157,13 +156,12 @@ func TestChainClient_GetTransaction(t *testing.T) {
 			Amount: 10,
 		},
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
 	err = tx.Sign(privKey)
 	require.Nil(t, err)
 
-	receipt, err := cli.SendTransactionWithReceipt(tx)
+	receipt, err := cli.SendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
 	require.True(t, strings.Contains(string(receipt.GetRet()), "not sufficient funds"))
 
@@ -224,7 +222,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 	err = tx.Sign(privKey)
 	require.Nil(t, err)
 
-	_, err = cli.sendTransactionWithReceipt(tx)
+	_, err = cli.sendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
 
 	meta0, err := cli.GetChainMeta()
@@ -238,7 +236,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 		err = tx.Sign(privKey)
 		require.Nil(t, err)
 
-		_, err = cli.sendTransaction(tx)
+		_, err = cli.sendTransaction(tx, nil)
 		require.Nil(t, err)
 	}
 
@@ -281,7 +279,6 @@ func genContractTransaction(
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(privateKey); err != nil {

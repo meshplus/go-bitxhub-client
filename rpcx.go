@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Rican7/retry"
@@ -202,11 +203,40 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 }
 
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	if opts == nil {
+		opts = new(TransactOpts)
+		opts.From = tx.From.Hex() // set default from for opts
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return "", err
+	}
+
+	if opts.IBTPNonce != 0 && opts.NormalNonce != 0 {
+		return "", fmt.Errorf("can't set ibtp nonce and normal nonce at the same time")
+	}
+
+	var nonce uint64
+	if opts.IBTPNonce == 0 && opts.NormalNonce == 0 {
+		// not nonce set for tx, then use latest nonce from bitxhub
+		nonce, err = cli.GetPendingNonceByAccount(opts.From)
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve account nonce: %w", err)
+		}
+	} else {
+		if opts.IBTPNonce != 0 {
+			nonce = opts.IBTPNonce
+		} else {
+			nonce = opts.NormalNonce
+		}
+	}
+	tx.Nonce = nonce
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return "", fmt.Errorf("tx sign: %w", err)
 	}
 
 	req := &pb.SendTransactionRequest{
@@ -234,6 +264,10 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
+	}
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return nil, fmt.Errorf("tx sign: %w", err)
 	}
 
 	req := &pb.SendTransactionRequest{
@@ -284,8 +318,8 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 	})
 }
 
-func (cli *ChainClient) PendingNonceAt(account string) (uint64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
+func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
 
 	grpcClient, err := cli.pool.getClient()
@@ -293,7 +327,13 @@ func (cli *ChainClient) PendingNonceAt(account string) (uint64, error) {
 		return 0, err
 	}
 
-	//return grpcClient.broker.PendingNonceAt(ctx, account)
+	res, err := grpcClient.broker.GetPendingNonceByAccount(ctx, &pb.Address{
+		Address: account,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseUint(string(res.Data), 10, 64)
 }
 
 func CheckReceipt(receipt *pb.Receipt) bool {

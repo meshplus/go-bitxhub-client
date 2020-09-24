@@ -10,6 +10,7 @@ import (
 	crypto "github.com/meshplus/bitxhub-kit/crypto"
 	types "github.com/meshplus/bitxhub-kit/types"
 	pb "github.com/meshplus/bitxhub-model/pb"
+	rpcx "github.com/meshplus/go-bitxhub-client"
 	reflect "reflect"
 )
 
@@ -78,33 +79,33 @@ func (mr *MockClientMockRecorder) SendView(tx interface{}) *gomock.Call {
 }
 
 // SendTransaction mocks base method
-func (m *MockClient) SendTransaction(tx *pb.Transaction) (string, error) {
+func (m *MockClient) SendTransaction(tx *pb.Transaction, opts *rpcx.TransactOpts) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendTransaction", tx)
+	ret := m.ctrl.Call(m, "SendTransaction", tx, opts)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendTransaction indicates an expected call of SendTransaction
-func (mr *MockClientMockRecorder) SendTransaction(tx interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) SendTransaction(tx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransaction", reflect.TypeOf((*MockClient)(nil).SendTransaction), tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransaction", reflect.TypeOf((*MockClient)(nil).SendTransaction), tx, opts)
 }
 
 // SendTransactionWithReceipt mocks base method
-func (m *MockClient) SendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error) {
+func (m *MockClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *rpcx.TransactOpts) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendTransactionWithReceipt", tx)
+	ret := m.ctrl.Call(m, "SendTransactionWithReceipt", tx, opts)
 	ret0, _ := ret[0].(*pb.Receipt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendTransactionWithReceipt indicates an expected call of SendTransactionWithReceipt
-func (mr *MockClientMockRecorder) SendTransactionWithReceipt(tx interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) SendTransactionWithReceipt(tx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransactionWithReceipt", reflect.TypeOf((*MockClient)(nil).SendTransactionWithReceipt), tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransactionWithReceipt", reflect.TypeOf((*MockClient)(nil).SendTransactionWithReceipt), tx, opts)
 }
 
 // GetReceipt mocks base method
@@ -286,18 +287,18 @@ func (mr *MockClientMockRecorder) Subscribe(arg0, arg1, arg2 interface{}) *gomoc
 }
 
 // DeployContract mocks base method
-func (m *MockClient) DeployContract(contract []byte) (types.Address, error) {
+func (m *MockClient) DeployContract(contract []byte, opts *rpcx.TransactOpts) (types.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeployContract", contract)
+	ret := m.ctrl.Call(m, "DeployContract", contract, opts)
 	ret0, _ := ret[0].(types.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DeployContract indicates an expected call of DeployContract
-func (mr *MockClientMockRecorder) DeployContract(contract interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) DeployContract(contract, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployContract", reflect.TypeOf((*MockClient)(nil).DeployContract), contract)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployContract", reflect.TypeOf((*MockClient)(nil).DeployContract), contract, opts)
 }
 
 // GenerateContractTx mocks base method
@@ -321,9 +322,9 @@ func (mr *MockClientMockRecorder) GenerateContractTx(vmType, address, method int
 }
 
 // InvokeContract mocks base method
-func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{vmType, address, method}
+	varargs := []interface{}{vmType, address, method, opts}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -334,16 +335,16 @@ func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address ty
 }
 
 // InvokeContract indicates an expected call of InvokeContract
-func (mr *MockClientMockRecorder) InvokeContract(vmType, address, method interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) InvokeContract(vmType, address, method, opts interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{vmType, address, method}, args...)
+	varargs := append([]interface{}{vmType, address, method, opts}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeContract", reflect.TypeOf((*MockClient)(nil).InvokeContract), varargs...)
 }
 
 // InvokeBVMContract mocks base method
-func (m *MockClient) InvokeBVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeBVMContract(address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{address, method}
+	varargs := []interface{}{address, method, opts}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -354,16 +355,16 @@ func (m *MockClient) InvokeBVMContract(address types.Address, method string, arg
 }
 
 // InvokeBVMContract indicates an expected call of InvokeBVMContract
-func (mr *MockClientMockRecorder) InvokeBVMContract(address, method interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) InvokeBVMContract(address, method, opts interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{address, method}, args...)
+	varargs := append([]interface{}{address, method, opts}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeBVMContract", reflect.TypeOf((*MockClient)(nil).InvokeBVMContract), varargs...)
 }
 
 // InvokeXVMContract mocks base method
-func (m *MockClient) InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeXVMContract(address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{address, method}
+	varargs := []interface{}{address, method, opts}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -374,9 +375,9 @@ func (m *MockClient) InvokeXVMContract(address types.Address, method string, arg
 }
 
 // InvokeXVMContract indicates an expected call of InvokeXVMContract
-func (mr *MockClientMockRecorder) InvokeXVMContract(address, method interface{}, args ...interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) InvokeXVMContract(address, method, opts interface{}, args ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{address, method}, args...)
+	varargs := append([]interface{}{address, method, opts}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeXVMContract", reflect.TypeOf((*MockClient)(nil).InvokeXVMContract), varargs...)
 }
 
@@ -408,4 +409,19 @@ func (m *MockClient) GetTPS(begin, end uint64) (uint64, error) {
 func (mr *MockClientMockRecorder) GetTPS(begin, end interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTPS", reflect.TypeOf((*MockClient)(nil).GetTPS), begin, end)
+}
+
+// GetPendingNonceByAccount mocks base method
+func (m *MockClient) GetPendingNonceByAccount(account string) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPendingNonceByAccount", account)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPendingNonceByAccount indicates an expected call of GetPendingNonceByAccount
+func (mr *MockClientMockRecorder) GetPendingNonceByAccount(account interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPendingNonceByAccount", reflect.TypeOf((*MockClient)(nil).GetPendingNonceByAccount), account)
 }
