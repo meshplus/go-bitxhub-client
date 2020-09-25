@@ -26,7 +26,7 @@ func (cli *ChainClient) DeployContract(contract []byte) (contractAddr types.Addr
 		From:      from,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(cli.privateKey); err != nil {
@@ -71,7 +71,7 @@ func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(cli.privateKey); err != nil {
@@ -115,7 +115,7 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     rand.Int63(),
+		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(cli.privateKey); err != nil {
