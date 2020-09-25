@@ -90,4 +90,7 @@ type Client interface {
 
 	// Get BitXHub's signatures specified by id and type.
 	GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error)
+
+	// Get BitXHub TPS during block [begin, end]
+	GetTPS(begin, end uint64) (uint64, error)
 }
