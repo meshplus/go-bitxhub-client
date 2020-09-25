@@ -394,3 +394,18 @@ func (mr *MockClientMockRecorder) GetMultiSigns(id, typ interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultiSigns", reflect.TypeOf((*MockClient)(nil).GetMultiSigns), id, typ)
 }
+
+// GetTPS mocks base method
+func (m *MockClient) GetTPS(begin, end uint64) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTPS", begin, end)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTPS indicates an expected call of GetTPS
+func (mr *MockClientMockRecorder) GetTPS(begin, end interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTPS", reflect.TypeOf((*MockClient)(nil).GetTPS), begin, end)
+}
