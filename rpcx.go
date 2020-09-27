@@ -213,7 +213,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
 		To:        tx.To,
 		Timestamp: tx.Timestamp,
 		Data:      tx.Data,
-		Nonce:     int64(tx.Nonce),
+		Nonce:     tx.Nonce,
 		Signature: tx.Signature,
 		Extra:     tx.Extra,
 	}
@@ -240,7 +240,7 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 		To:        tx.To,
 		Timestamp: tx.Timestamp,
 		Data:      tx.Data,
-		Nonce:     int64(tx.Nonce),
+		Nonce:     tx.Nonce,
 		Signature: tx.Signature,
 		Extra:     tx.Extra,
 	}
