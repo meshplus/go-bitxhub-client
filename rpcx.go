@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Rican7/retry"
@@ -57,9 +58,11 @@ type Interchain struct {
 var _ Client = (*ChainClient)(nil)
 
 type ChainClient struct {
-	privateKey crypto.PrivateKey
-	logger     Logger
-	pool       *ConnectionPool
+	privateKey  crypto.PrivateKey
+	logger      Logger
+	pool        *ConnectionPool
+	normalSeqNo int64
+	ibtpSeqNo   int64
 }
 
 func (cli *ChainClient) GetValidators() (*pb.Response, error) {
@@ -124,12 +127,12 @@ func (cli *ChainClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
 	return cli.sendView(tx)
 }
 
-func (cli *ChainClient) SendTransaction(tx *pb.Transaction) (string, error) {
-	return cli.sendTransaction(tx)
+func (cli *ChainClient) SendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	return cli.sendTransaction(tx, opts)
 }
 
-func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error) {
-	return cli.sendTransactionWithReceipt(tx)
+func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
 // GetReceipts get receipts by tx hashes
@@ -186,8 +189,8 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	return grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
 }
 
-func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error) {
-	hash, err := cli.sendTransaction(tx)
+func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	hash, err := cli.sendTransaction(tx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("send tx error: %s", err)
 	}
@@ -199,12 +202,41 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction) (*pb.Rece
 	return receipt, nil
 }
 
-func (cli *ChainClient) sendTransaction(tx *pb.Transaction) (string, error) {
+func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	if opts == nil {
+		opts = new(TransactOpts)
+		opts.From = tx.From.Hex() // set default from for opts
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return "", err
+	}
+
+	if opts.IBTPNonce != 0 && opts.NormalNonce != 0 {
+		return "", fmt.Errorf("can't set ibtp nonce and normal nonce at the same time")
+	}
+
+	var nonce uint64
+	if opts.IBTPNonce == 0 && opts.NormalNonce == 0 {
+		// not nonce set for tx, then use latest nonce from bitxhub
+		nonce, err = cli.GetPendingNonceByAccount(opts.From)
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve account nonce: %w", err)
+		}
+	} else {
+		if opts.IBTPNonce != 0 {
+			nonce = opts.IBTPNonce
+		} else {
+			nonce = opts.NormalNonce
+		}
+	}
+	tx.Nonce = nonce
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return "", fmt.Errorf("tx sign: %w", err)
 	}
 
 	req := &pb.SendTransactionRequest{
@@ -232,6 +264,10 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
+	}
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return nil, fmt.Errorf("tx sign: %w", err)
 	}
 
 	req := &pb.SendTransactionRequest{
@@ -280,6 +316,24 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 		Content: content,
 		Type:    typ,
 	})
+}
+
+func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := grpcClient.broker.GetPendingNonceByAccount(ctx, &pb.Address{
+		Address: account,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseUint(string(res.Data), 10, 64)
 }
 
 func CheckReceipt(receipt *pb.Receipt) bool {

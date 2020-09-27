@@ -28,10 +28,10 @@ type Client interface {
 
 	//Send a signed transaction to BitXHub. If the signature is illegal,
 	//the transaction hash will be obtained but the transaction receipt is illegal.
-	SendTransaction(tx *pb.Transaction) (string, error)
+	SendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error)
 
 	//Send transaction to BitXHub and get the receipt.
-	SendTransactionWithReceipt(tx *pb.Transaction) (*pb.Receipt, error)
+	SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error)
 
 	//Get the receipt by transaction hash,
 	//the status of the receipt is a sign of whether the transaction is successful.
@@ -73,24 +73,34 @@ type Client interface {
 	Subscribe(context.Context, pb.SubscriptionRequest_Type, []byte) (<-chan interface{}, error)
 
 	//Deploy the contract, the contract address will be returned when the deployment is successful.
-	DeployContract(contract []byte) (contractAddr types.Address, err error)
+	DeployContract(contract []byte, opts *TransactOpts) (contractAddr types.Address, err error)
 
 	//GenerateContractTx generates signed transaction to invoke contract
 	GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error)
 
 	//Call the contract according to the contract type, contract address,
 	//contract method, and contract method parameters
-	InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error)
+	InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error)
 
 	//Invoke the BVM contract, BVM is BitXHub's blot contract.
-	InvokeBVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error)
+	InvokeBVMContract(address types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error)
 
 	//Invoke the XVM contract, XVM is WebAssembly contract.
-	InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error)
+	InvokeXVMContract(address types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error)
 
 	// Get BitXHub's signatures specified by id and type.
 	GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error)
 
 	// Get BitXHub TPS during block [begin, end]
 	GetTPS(begin, end uint64) (uint64, error)
+
+	// GetPendingNonceByAccount returns the latest nonce of an account in the pending status,
+	// and it should be the nonce for next transaction
+	GetPendingNonceByAccount(account string) (uint64, error)
+}
+
+type TransactOpts struct {
+	From        string
+	NormalNonce uint64
+	IBTPNonce   uint64
 }

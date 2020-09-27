@@ -2,7 +2,6 @@ package rpcx
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/meshplus/bitxhub-kit/types"
@@ -10,7 +9,7 @@ import (
 )
 
 // DeployContract let client deploy the wasm contract into BitXHub.
-func (cli *ChainClient) DeployContract(contract []byte) (contractAddr types.Address, err error) {
+func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (contractAddr types.Address, err error) {
 	from, err := cli.privateKey.PublicKey().Address()
 	if err != nil {
 		return types.Address{}, err
@@ -26,14 +25,9 @@ func (cli *ChainClient) DeployContract(contract []byte) (contractAddr types.Addr
 		From:      from,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return types.Address{}, fmt.Errorf("tx sign: %w", err)
-	}
-
-	receipt, err := cli.sendTransactionWithReceipt(tx)
+	receipt, err := cli.sendTransactionWithReceipt(tx, opts)
 	if err != nil {
 		return types.Address{}, err
 	}
@@ -44,7 +38,8 @@ func (cli *ChainClient) DeployContract(contract []byte) (contractAddr types.Addr
 }
 
 // InvokeContract let client invoke the wasm contract with specific method.
-func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
+func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string,
+	opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	from, err := cli.privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err
@@ -71,21 +66,16 @@ func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return nil, fmt.Errorf("tx sign: %w", err)
-	}
-
-	return cli.sendTransactionWithReceipt(tx)
+	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
-func (cli *ChainClient) InvokeBVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
-	return cli.InvokeContract(pb.TransactionData_BVM, address, method, args...)
+func (cli *ChainClient) InvokeBVMContract(address types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
+	return cli.InvokeContract(pb.TransactionData_BVM, address, method, opts, args...)
 }
-func (cli *ChainClient) InvokeXVMContract(address types.Address, method string, args ...*pb.Arg) (*pb.Receipt, error) {
-	return cli.InvokeContract(pb.TransactionData_XVM, address, method, args...)
+func (cli *ChainClient) InvokeXVMContract(address types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
+	return cli.InvokeContract(pb.TransactionData_XVM, address, method, opts, args...)
 }
 
 func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
@@ -115,7 +105,6 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		To:        address,
 		Data:      td,
 		Timestamp: time.Now().UnixNano(),
-		Nonce:     uint64(rand.Int63()),
 	}
 
 	if err := tx.Sign(cli.privateKey); err != nil {

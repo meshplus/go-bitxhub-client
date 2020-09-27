@@ -3,9 +3,10 @@ package rpcx
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/meshplus/bitxhub-kit/crypto"
 	"path/filepath"
 	"testing"
+
+	"github.com/meshplus/bitxhub-kit/crypto"
 
 	"github.com/docker/docker/pkg/testutil/assert"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
@@ -47,7 +48,7 @@ func TestAppChain_Register(t *testing.T) {
 		String("1.8"),              //version
 		String(pubKeyStr),          //public key
 	}
-	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Register", args...)
+	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Register", nil, args...)
 	require.Nil(t, err)
 	appChain := &Appchain{}
 	err = json.Unmarshal(res.Ret, appChain)
@@ -64,7 +65,7 @@ func testAppChain_Aduit(t *testing.T) {
 		Int32(1),               //audit approve
 		String("Audit passed"), //desc
 	}
-	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Audit", args...)
+	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Audit", nil, args...)
 	require.Nil(t, err)
 	assert.Contains(t, string(res.Ret), "successfully")
 }
