@@ -2,24 +2,33 @@ package rpcx
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/meshplus/bitxhub-kit/crypto"
+	"github.com/meshplus/bitxhub-kit/fileutil"
 	"github.com/meshplus/bitxhub-kit/log"
 )
 
 const blockChanNumber = 1024
 
 type config struct {
-	addrs      []string
 	logger     Logger
 	privateKey crypto.PrivateKey
+	nodesInfo  []*NodeInfo
+}
+
+type NodeInfo struct {
+	Addr       string
+	EnableTLS  bool
+	CertPath   string
+	IssuerName string
 }
 
 type Option func(*config)
 
-func WithAddrs(addrs []string) Option {
+func WithNodesInfo(nodesInfo ...*NodeInfo) Option {
 	return func(config *config) {
-		config.addrs = addrs
+		config.nodesInfo = nodesInfo
 	}
 }
 
@@ -53,7 +62,7 @@ func checkConfig(config *config) error {
 		return fmt.Errorf("private key is empty")
 	}
 
-	if len(config.addrs) == 0 {
+	if len(config.nodesInfo) == 0 {
 		return fmt.Errorf("bitxhub addrs cant not be 0")
 	}
 
@@ -61,5 +70,13 @@ func checkConfig(config *config) error {
 		config.logger = log.NewWithModule("rpcx")
 	}
 
+	// if EnableTLS is set, then tls certs must be provided
+	for _, nodeInfo := range config.nodesInfo {
+		if nodeInfo.EnableTLS {
+			if !fileutil.Exist(filepath.Join(nodeInfo.CertPath, "ca.cert")) {
+				return fmt.Errorf("ca.cert file is not found while tls is enabled")
+			}
+		}
+	}
 	return nil
 }
