@@ -17,8 +17,8 @@ import (
 
 var (
 	cfg = &config{
-		addrs: []string{
-			"localhost:60011",
+		nodesInfo: []*NodeInfo{
+			{Addr: "localhost:60011"},
 		},
 		logger: logrus.New(),
 	}
@@ -34,7 +34,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -75,7 +75,7 @@ func TestChainClient_SendView(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -89,6 +89,7 @@ func TestChainClient_SendView(t *testing.T) {
 	tx, err := genContractTransaction(pb.TransactionData_BVM, privKey,
 		types.String2Address(BoltContractAddress), "Set", pb.String(string(randKey)), pb.String(value))
 	require.Nil(t, err)
+	tx.Nonce = rand.Uint64()
 
 	err = tx.Sign(privKey)
 	require.Nil(t, err)
@@ -102,6 +103,7 @@ func TestChainClient_SendView(t *testing.T) {
 	queryKey, err := genContractTransaction(pb.TransactionData_BVM, privKey,
 		types.String2Address(BoltContractAddress), "Get", pb.String(string(randKey)))
 	require.Nil(t, err)
+	queryKey.Nonce = rand.Uint64()
 
 	receipt, err = cli.SendView(queryKey)
 	require.Nil(t, err)
@@ -120,6 +122,7 @@ func TestChainClient_SendView(t *testing.T) {
 	view, err := genContractTransaction(pb.TransactionData_BVM, privKey,
 		types.String2Address(BoltContractAddress), "Get", pb.String(string(randKey)))
 	require.Nil(t, err)
+	view.Nonce = rand.Uint64()
 
 	receipt, err = cli.SendView(view)
 	require.Nil(t, err)
@@ -137,7 +140,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -192,7 +195,7 @@ func TestChainClient_GetAccountBalance(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -209,7 +212,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)

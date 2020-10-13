@@ -9,12 +9,13 @@ import (
 	"github.com/meshplus/bitxhub-model/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials"
 )
 
 type grpcClient struct {
-	broker pb.ChainBrokerClient
-	conn   *grpc.ClientConn
-	addr   string
+	broker   pb.ChainBrokerClient
+	conn     *grpc.ClientConn
+	nodeInfo *NodeInfo
 }
 
 type ConnectionPool struct {
@@ -27,9 +28,9 @@ func NewPool(config *config) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		logger: config.logger,
 	}
-	for _, addr := range config.addrs {
+	for _, nodeInfo := range config.nodesInfo {
 		cli := &grpcClient{
-			addr: addr,
+			nodeInfo: nodeInfo,
 		}
 		pool.connections = append(pool.connections, cli)
 	}
@@ -42,7 +43,7 @@ func (pool *ConnectionPool) Close() error {
 			continue
 		}
 		if err := c.conn.Close(); err != nil {
-			pool.logger.Errorf("stop connection with %v error: %v", c.addr, err)
+			pool.logger.Errorf("stop connection with %v error: %v", c.nodeInfo.Addr, err)
 			continue
 		}
 	}
@@ -56,9 +57,23 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 		for _, cli := range pool.connections {
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 				// try to build a connect or reconnect
-				conn, err := grpc.Dial(cli.addr, grpc.WithInsecure())
+				var (
+					opt grpc.DialOption
+				)
+				// if EnableTLS is set, then setup connection with ca cert
+				if cli.nodeInfo.EnableTLS {
+					creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.IssuerName)
+					if err != nil {
+						pool.logger.Errorf("creat tls credentials from %s", cli.nodeInfo.CertPath)
+						continue
+					}
+					opt = grpc.WithTransportCredentials(creds)
+				} else {
+					opt = grpc.WithInsecure()
+				}
+				conn, err := grpc.Dial(cli.nodeInfo.Addr, opt)
 				if err != nil {
-					pool.logger.Errorf("dial with addr: %v fail", cli.addr)
+					pool.logger.Errorf("dial with Addr: %v fail", cli.nodeInfo.Addr)
 					continue
 				}
 				cli.conn = conn

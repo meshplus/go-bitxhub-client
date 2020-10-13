@@ -1,9 +1,9 @@
 package rpcx
 
 import (
-	"github.com/meshplus/bitxhub-kit/crypto"
 	"testing"
 
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/stretchr/testify/require"
@@ -40,7 +40,7 @@ func Cli() (*ChainClient, error) {
 	}
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
