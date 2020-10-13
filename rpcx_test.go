@@ -14,15 +14,15 @@ import (
 )
 
 var cfg = &config{
-	addrs: []string{
-		"localhost:60011",
+	nodesInfo: []*NodeInfo{
+		{Addr: "localhost:60011"},
 	},
 	logger: logrus.New(),
 }
 
 var cfg1 = &config{
-	addrs: []string{
-		"localhost:60012",
+	nodesInfo: []*NodeInfo{
+		{Addr: "localhost:60012"},
 	},
 	logger: logrus.New(),
 }
@@ -35,7 +35,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -80,7 +80,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -136,7 +136,7 @@ func TestChainClient_GetAccountBalance(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)

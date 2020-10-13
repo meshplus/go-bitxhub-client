@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/bitxhub-model/pb"
-
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
+	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +25,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)

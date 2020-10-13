@@ -39,7 +39,7 @@ func Cli() (*ChainClient, error) {
 	}
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)
@@ -53,7 +53,7 @@ func Cli1() (*ChainClient, error) {
 	}
 
 	cli, err := New(
-		WithAddrs(cfg1.addrs),
+		WithNodesInfo(cfg1.nodesInfo...),
 		WithLogger(cfg1.logger),
 		WithPrivateKey(privKey),
 	)
