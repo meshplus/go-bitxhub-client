@@ -25,7 +25,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	require.Nil(t, err)
 
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 	)

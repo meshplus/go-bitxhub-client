@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/meshplus/bitxhub-kit/crypto"
-
 	"github.com/docker/docker/pkg/testutil/assert"
+	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/sirupsen/logrus"
@@ -25,14 +24,14 @@ func TestAppChain_Register(t *testing.T) {
 	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 	var cfg = &config{
-		addrs: []string{
-			"localhost:60011",
+		nodesInfo: []*NodeInfo{
+			{Addr: "localhost:60011"},
 		},
 		logger:     logrus.New(),
 		privateKey: privKey,
 	}
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(cfg.privateKey),
 	)
@@ -77,14 +76,14 @@ func getAdminCli(t *testing.T) *ChainClient {
 	k, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), keyPassword)
 	require.Nil(t, err)
 	var cfg = &config{
-		addrs: []string{
-			"localhost:60011",
+		nodesInfo: []*NodeInfo{
+			{Addr: "localhost:60011"},
 		},
 		logger:     logrus.New(),
 		privateKey: k,
 	}
 	cli, err := New(
-		WithAddrs(cfg.addrs),
+		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(cfg.privateKey),
 	)
