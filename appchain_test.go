@@ -47,7 +47,7 @@ func TestAppChain_Register(t *testing.T) {
 		String("1.8"),              //version
 		String(pubKeyStr),          //public key
 	}
-	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Register", nil, args...)
+	res, err := cli.InvokeBVMContract(*AppchainMgrContractAddr, "Register", nil, args...)
 	require.Nil(t, err)
 	appChain := &Appchain{}
 	err = json.Unmarshal(res.Ret, appChain)
@@ -56,7 +56,7 @@ func TestAppChain_Register(t *testing.T) {
 	AppChainID = appChain.ID
 }
 
-func testAppChain_Aduit(t *testing.T) {
+func TestAppChain_Aduit(t *testing.T) {
 	require.NotEqual(t, "", AppChainID)
 	cli := getAdminCli(t)
 	args := []*pb.Arg{
@@ -64,7 +64,7 @@ func testAppChain_Aduit(t *testing.T) {
 		Int32(1),               //audit approve
 		String("Audit passed"), //desc
 	}
-	res, err := cli.InvokeBVMContract(AppchainMgrContractAddr, "Audit", nil, args...)
+	res, err := cli.InvokeBVMContract(*AppchainMgrContractAddr, "Audit", nil, args...)
 	require.Nil(t, err)
 	assert.Contains(t, string(res.Ret), "successfully")
 }

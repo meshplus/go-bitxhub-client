@@ -46,12 +46,16 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	to, err := privKey1.PublicKey().Address()
 	require.Nil(t, err)
 
+	data := &pb.TransactionData{
+		Amount: 10,
+	}
+
+	payload, err := data.Marshal()
+	require.Nil(t, err)
 	tx := &pb.Transaction{
-		From: from,
-		To:   to,
-		Data: &pb.TransactionData{
-			Amount: 10,
-		},
+		From:      *from,
+		To:        *to,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 
@@ -63,7 +67,8 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 
 	ret, err := cli.GetReceipt(hash)
 	require.Nil(t, err)
-	require.Equal(t, tx.Hash().String(), ret.TxHash.String())
+
+	require.Equal(t, hash, ret.TxHash.String())
 
 	err = cli.Stop()
 	require.Nil(t, err)
@@ -116,7 +121,7 @@ func TestChainClient_SendView(t *testing.T) {
 
 	ret, err := cli.GetReceipt(hash)
 	require.Nil(t, err)
-	require.Equal(t, tx.Hash().String(), ret.TxHash.String())
+	require.Equal(t, hash, ret.TxHash.String())
 
 	// test sending read-ledger tx to SendView api
 	view, err := genContractTransaction(pb.TransactionData_BVM, privKey,
@@ -152,12 +157,17 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	to, err := privKey1.PublicKey().Address()
 	require.Nil(t, err)
 
+	data := &pb.TransactionData{
+		Amount: 10,
+	}
+
+	payload, err := data.Marshal()
+	require.Nil(t, err)
+
 	tx := &pb.Transaction{
-		From: from,
-		To:   to,
-		Data: &pb.TransactionData{
-			Amount: 10,
-		},
+		From:      *from,
+		To:        *to,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 
@@ -255,7 +265,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 
 func genContractTransaction(
 	vmType pb.TransactionData_VMType, privateKey crypto.PrivateKey,
-	address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+	address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
 	from, err := privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err
@@ -277,10 +287,15 @@ func genContractTransaction(
 		Payload: data,
 	}
 
+	payload, err := td.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
 	tx := &pb.Transaction{
-		From:      from,
-		To:        address,
-		Data:      td,
+		From:      *from,
+		To:        *address,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 

@@ -21,9 +21,14 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 		Payload: contract,
 	}
 
+	payload, err := td.Marshal()
+	if err != nil {
+		return types.Address{}, err
+	}
+
 	tx := &pb.Transaction{
-		From:      from,
-		Data:      td,
+		From:      *from,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 
@@ -34,7 +39,7 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 
 	ret := types.Bytes2Address(receipt.GetRet())
 
-	return ret, nil
+	return *ret, nil
 }
 
 // InvokeContract let client invoke the wasm contract with specific method.
@@ -61,10 +66,15 @@ func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address
 		Payload: data,
 	}
 
+	payload, err := td.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
 	tx := &pb.Transaction{
-		From:      from,
+		From:      *from,
 		To:        address,
-		Data:      td,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 
@@ -100,10 +110,15 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		Payload: data,
 	}
 
+	payload, err := td.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
 	tx := &pb.Transaction{
-		From:      from,
+		From:      *from,
 		To:        address,
-		Data:      td,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 

@@ -48,7 +48,7 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sendInterchaintx(t, cli, from, to)
+	sendInterchaintx(t, cli, *from, *to)
 
 	meta, err := cli.GetChainMeta()
 	require.Nil(t, err)
@@ -74,7 +74,7 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	}
 }
 
-func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to types.Address) {
+func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to *types.Address) {
 	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
@@ -96,13 +96,18 @@ func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, 
 	return cli, privKey, from, to
 }
 
-func sendNormal(t *testing.T, cli *ChainClient, from, to types.Address, privKey crypto.PrivateKey) {
+func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey crypto.PrivateKey) {
+	data := &pb.TransactionData{
+		Amount: 10,
+	}
+
+	payload, err := data.Marshal()
+	require.Nil(t, err)
+
 	tx := &pb.Transaction{
-		From: from,
-		To:   to,
-		Data: &pb.TransactionData{
-			Amount: 10,
-		},
+		From:      *from,
+		To:        *to,
+		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
 
@@ -125,7 +130,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 
 	// register appchain
 	r, err := cli.InvokeBVMContract(
-		AppchainMgrContractAddr,
+		*AppchainMgrContractAddr,
 		"Register", nil, String(string(validators)),
 		Int32(1), String("hyperchain"), String("hpc"),
 		String("hyperchain"), String("1.0.0"), String(string(pubKey)),
@@ -140,7 +145,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	b, err := ibtp.Marshal()
 	require.Nil(t, err)
 
-	tx, _ := cli.GenerateContractTx(pb.TransactionData_BVM, InterchainContractAddr,
+	tx, _ := cli.GenerateContractTx(pb.TransactionData_BVM, *InterchainContractAddr,
 		"HandleIBTP", Bytes(b))
 	tx.Extra = proof
 	r, err = cli.SendTransactionWithReceipt(tx, &TransactOpts{
@@ -159,7 +164,7 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 	require.Nil(t, err)
 
 	r, err := cli.InvokeBVMContract(
-		RuleManagerContractAddr,
+		*RuleManagerContractAddr,
 		"RegisterRule", nil,
 		String(from.String()),
 		String(contractAddr.String()))
