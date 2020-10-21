@@ -239,18 +239,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 		return "", fmt.Errorf("tx sign: %w", err)
 	}
 
-	req := &pb.SendTransactionRequest{
-		Version:   tx.Version,
-		From:      tx.From,
-		To:        tx.To,
-		Timestamp: tx.Timestamp,
-		Data:      tx.Data,
-		Nonce:     tx.Nonce,
-		Signature: tx.Signature,
-		Extra:     tx.Extra,
-	}
-
-	msg, err := grpcClient.broker.SendTransaction(ctx, req)
+	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
 		return "", err
 	}
@@ -270,18 +259,7 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 		return nil, fmt.Errorf("tx sign: %w", err)
 	}
 
-	req := &pb.SendTransactionRequest{
-		Version:   tx.Version,
-		From:      tx.From,
-		To:        tx.To,
-		Timestamp: tx.Timestamp,
-		Data:      tx.Data,
-		Nonce:     tx.Nonce,
-		Signature: tx.Signature,
-		Extra:     tx.Extra,
-	}
-
-	receipt, err := grpcClient.broker.SendView(ctx, req)
+	receipt, err := grpcClient.broker.SendView(ctx, tx)
 	if err != nil {
 		return nil, err
 	}
