@@ -16,13 +16,13 @@ import (
 )
 
 var (
-	InterchainContractAddr     = types.String2Address("000000000000000000000000000000000000000a")
-	StoreContractAddr          = types.String2Address("000000000000000000000000000000000000000b")
-	RuleManagerContractAddr    = types.String2Address("000000000000000000000000000000000000000c")
-	RoleContractAddr           = types.String2Address("000000000000000000000000000000000000000d")
-	AppchainMgrContractAddr    = types.String2Address("000000000000000000000000000000000000000e")
-	TransactionMgrContractAddr = types.String2Address("000000000000000000000000000000000000000f")
-	AssetExchangeContractAddr  = types.String2Address("0000000000000000000000000000000000000010")
+	InterchainContractAddr     = types.NewAddressByStr("000000000000000000000000000000000000000a")
+	StoreContractAddr          = types.NewAddressByStr("000000000000000000000000000000000000000b")
+	RuleManagerContractAddr    = types.NewAddressByStr("000000000000000000000000000000000000000c")
+	RoleContractAddr           = types.NewAddressByStr("000000000000000000000000000000000000000d")
+	AppchainMgrContractAddr    = types.NewAddressByStr("000000000000000000000000000000000000000e")
+	TransactionMgrContractAddr = types.NewAddressByStr("000000000000000000000000000000000000000f")
+	AssetExchangeContractAddr  = types.NewAddressByStr("0000000000000000000000000000000000000010")
 )
 
 const (
@@ -205,7 +205,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
 	if opts == nil {
 		opts = new(TransactOpts)
-		opts.From = tx.From.Hex() // set default from for opts
+		opts.From = tx.From.String() // set default from for opts
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
