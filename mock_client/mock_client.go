@@ -287,10 +287,10 @@ func (mr *MockClientMockRecorder) Subscribe(arg0, arg1, arg2 interface{}) *gomoc
 }
 
 // DeployContract mocks base method
-func (m *MockClient) DeployContract(contract []byte, opts *rpcx.TransactOpts) (types.Address, error) {
+func (m *MockClient) DeployContract(contract []byte, opts *rpcx.TransactOpts) (*types.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeployContract", contract, opts)
-	ret0, _ := ret[0].(types.Address)
+	ret0, _ := ret[0].(*types.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -302,7 +302,7 @@ func (mr *MockClientMockRecorder) DeployContract(contract, opts interface{}) *go
 }
 
 // GenerateContractTx mocks base method
-func (m *MockClient) GenerateContractTx(vmType pb.TransactionData_VMType, address types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+func (m *MockClient) GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{vmType, address, method}
 	for _, a := range args {
@@ -321,8 +321,23 @@ func (mr *MockClientMockRecorder) GenerateContractTx(vmType, address, method int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateContractTx", reflect.TypeOf((*MockClient)(nil).GenerateContractTx), varargs...)
 }
 
+// GenerateIBTPTx mocks base method
+func (m *MockClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateIBTPTx", ibtp)
+	ret0, _ := ret[0].(*pb.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateIBTPTx indicates an expected call of GenerateIBTPTx
+func (mr *MockClientMockRecorder) GenerateIBTPTx(ibtp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateIBTPTx", reflect.TypeOf((*MockClient)(nil).GenerateIBTPTx), ibtp)
+}
+
 // InvokeContract mocks base method
-func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address *types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{vmType, address, method, opts}
 	for _, a := range args {
@@ -342,7 +357,7 @@ func (mr *MockClientMockRecorder) InvokeContract(vmType, address, method, opts i
 }
 
 // InvokeBVMContract mocks base method
-func (m *MockClient) InvokeBVMContract(address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeBVMContract(address *types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{address, method, opts}
 	for _, a := range args {
@@ -362,7 +377,7 @@ func (mr *MockClientMockRecorder) InvokeBVMContract(address, method, opts interf
 }
 
 // InvokeXVMContract mocks base method
-func (m *MockClient) InvokeXVMContract(address types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
+func (m *MockClient) InvokeXVMContract(address *types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{address, method, opts}
 	for _, a := range args {

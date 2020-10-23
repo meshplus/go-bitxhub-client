@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/meshplus/bitxhub-model/constant"
+
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-kit/types"
@@ -105,13 +107,11 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey
 	require.Nil(t, err)
 
 	tx := &pb.Transaction{
-		From:      *from,
-		To:        *to,
+		From:      from,
+		To:        to,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
-
-	//require.Nil(t, tx.Sign(privKey))
 
 	hash, err := cli.SendTransaction(tx, nil)
 	require.Nil(t, err)
@@ -130,7 +130,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 
 	// register appchain
 	r, err := cli.InvokeBVMContract(
-		*AppchainMgrContractAddr,
+		constant.AppchainMgrContractAddr.Address(),
 		"Register", nil, String(string(validators)),
 		Int32(1), String("hyperchain"), String("hpc"),
 		String("hyperchain"), String("1.0.0"), String(string(pubKey)),
@@ -142,11 +142,8 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	deployRule(t, cli, from)
 
 	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN, proof)
-	b, err := ibtp.Marshal()
-	require.Nil(t, err)
 
-	tx, _ := cli.GenerateContractTx(pb.TransactionData_BVM, *InterchainContractAddr,
-		"HandleIBTP", Bytes(b))
+	tx, _ := cli.GenerateIBTPTx(ibtp)
 	tx.Extra = proof
 	r, err = cli.SendTransactionWithReceipt(tx, &TransactOpts{
 		From:      ibtpAccount(ibtp),
@@ -164,7 +161,7 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 	require.Nil(t, err)
 
 	r, err := cli.InvokeBVMContract(
-		*RuleManagerContractAddr,
+		constant.RuleManagerContractAddr.Address(),
 		"RegisterRule", nil,
 		String(from.String()),
 		String(contractAddr.String()))

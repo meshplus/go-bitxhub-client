@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/meshplus/bitxhub-model/constant"
+
 	"github.com/docker/docker/pkg/testutil/assert"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
@@ -20,7 +22,7 @@ const (
 
 var AppChainID string
 
-func TestAppChain_Register(t *testing.T) {
+func TestAppChain_Register_Audit(t *testing.T) {
 	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 	var cfg = &config{
@@ -47,24 +49,21 @@ func TestAppChain_Register(t *testing.T) {
 		String("1.8"),              //version
 		String(pubKeyStr),          //public key
 	}
-	res, err := cli.InvokeBVMContract(*AppchainMgrContractAddr, "Register", nil, args...)
+	res, err := cli.InvokeBVMContract(constant.AppchainMgrContractAddr.Address(), "Register", nil, args...)
 	require.Nil(t, err)
 	appChain := &Appchain{}
 	err = json.Unmarshal(res.Ret, appChain)
 	require.Nil(t, err)
 	require.NotNil(t, appChain.ID)
 	AppChainID = appChain.ID
-}
 
-func TestAppChain_Aduit(t *testing.T) {
-	require.NotEqual(t, "", AppChainID)
-	cli := getAdminCli(t)
-	args := []*pb.Arg{
+	adminCli := getAdminCli(t)
+	args = []*pb.Arg{
 		String(AppChainID),
 		Int32(1),               //audit approve
 		String("Audit passed"), //desc
 	}
-	res, err := cli.InvokeBVMContract(*AppchainMgrContractAddr, "Audit", nil, args...)
+	res, err = adminCli.InvokeBVMContract(constant.AppchainMgrContractAddr.Address(), "Audit", nil, args...)
 	require.Nil(t, err)
 	assert.Contains(t, string(res.Ret), "successfully")
 }
@@ -72,8 +71,7 @@ func TestAppChain_Aduit(t *testing.T) {
 // getAdminCli returns client with admin account.
 func getAdminCli(t *testing.T) *ChainClient {
 	// you should put your bitxhub/scripts/build/node1/key.json to testdata/key.json.
-
-	k, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), keyPassword)
+	k, err := asym.RestorePrivateKey(filepath.Join("./testdata", "key.json"), keyPassword)
 	require.Nil(t, err)
 	var cfg = &config{
 		nodesInfo: []*NodeInfo{

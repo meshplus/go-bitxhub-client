@@ -11,18 +11,7 @@ import (
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"github.com/meshplus/bitxhub-kit/crypto"
-	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/pb"
-)
-
-var (
-	InterchainContractAddr     = types.String2Address("000000000000000000000000000000000000000a")
-	StoreContractAddr          = types.String2Address("000000000000000000000000000000000000000b")
-	RuleManagerContractAddr    = types.String2Address("000000000000000000000000000000000000000c")
-	RoleContractAddr           = types.String2Address("000000000000000000000000000000000000000d")
-	AppchainMgrContractAddr    = types.String2Address("000000000000000000000000000000000000000e")
-	TransactionMgrContractAddr = types.String2Address("000000000000000000000000000000000000000f")
-	AssetExchangeContractAddr  = types.String2Address("0000000000000000000000000000000000000010")
 )
 
 const (
@@ -205,7 +194,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
 	if opts == nil {
 		opts = new(TransactOpts)
-		opts.From = tx.From.Hex() // set default from for opts
+		opts.From = tx.From.String() // set default from for opts
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
