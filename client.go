@@ -78,6 +78,9 @@ type Client interface {
 	//GenerateContractTx generates signed transaction to invoke contract
 	GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error)
 
+	// GenerateIBTPTx generates interchain tx with ibtp specified
+	GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error)
+
 	//Call the contract according to the contract type, contract address,
 	//contract method, and contract method parameters
 	InvokeContract(vmType pb.TransactionData_VMType, address *types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error)

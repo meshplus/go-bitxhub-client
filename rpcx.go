@@ -11,18 +11,7 @@ import (
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"github.com/meshplus/bitxhub-kit/crypto"
-	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/pb"
-)
-
-var (
-	InterchainContractAddr     = types.NewAddressByStr("000000000000000000000000000000000000000a")
-	StoreContractAddr          = types.NewAddressByStr("000000000000000000000000000000000000000b")
-	RuleManagerContractAddr    = types.NewAddressByStr("000000000000000000000000000000000000000c")
-	RoleContractAddr           = types.NewAddressByStr("000000000000000000000000000000000000000d")
-	AppchainMgrContractAddr    = types.NewAddressByStr("000000000000000000000000000000000000000e")
-	TransactionMgrContractAddr = types.NewAddressByStr("000000000000000000000000000000000000000f")
-	AssetExchangeContractAddr  = types.NewAddressByStr("0000000000000000000000000000000000000010")
 )
 
 const (

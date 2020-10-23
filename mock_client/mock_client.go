@@ -321,6 +321,21 @@ func (mr *MockClientMockRecorder) GenerateContractTx(vmType, address, method int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateContractTx", reflect.TypeOf((*MockClient)(nil).GenerateContractTx), varargs...)
 }
 
+// GenerateIBTPTx mocks base method
+func (m *MockClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateIBTPTx", ibtp)
+	ret0, _ := ret[0].(*pb.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateIBTPTx indicates an expected call of GenerateIBTPTx
+func (mr *MockClientMockRecorder) GenerateIBTPTx(ibtp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateIBTPTx", reflect.TypeOf((*MockClient)(nil).GenerateIBTPTx), ibtp)
+}
+
 // InvokeContract mocks base method
 func (m *MockClient) InvokeContract(vmType pb.TransactionData_VMType, address *types.Address, method string, opts *rpcx.TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()

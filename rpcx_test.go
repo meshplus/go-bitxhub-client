@@ -53,8 +53,8 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	payload, err := data.Marshal()
 	require.Nil(t, err)
 	tx := &pb.Transaction{
-		From:      *from,
-		To:        *to,
+		From:      from,
+		To:        to,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
@@ -72,7 +72,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 
 	err = cli.Stop()
 	require.Nil(t, err)
-	fmt.Println(ret.TxHash.Hex())
+	fmt.Println(ret.TxHash.String())
 }
 
 func TestChainClient_SendView(t *testing.T) {
@@ -92,7 +92,7 @@ func TestChainClient_SendView(t *testing.T) {
 	require.Nil(t, err)
 
 	tx, err := genContractTransaction(pb.TransactionData_BVM, privKey,
-		types.String2Address(BoltContractAddress), "Set", pb.String(string(randKey)), pb.String(value))
+		types.NewAddressByStr(BoltContractAddress), "Set", pb.String(string(randKey)), pb.String(value))
 	require.Nil(t, err)
 	tx.Nonce = rand.Uint64()
 
@@ -106,7 +106,7 @@ func TestChainClient_SendView(t *testing.T) {
 	require.Equal(t, pb.Receipt_SUCCESS, receipt.Status)
 
 	queryKey, err := genContractTransaction(pb.TransactionData_BVM, privKey,
-		types.String2Address(BoltContractAddress), "Get", pb.String(string(randKey)))
+		types.NewAddressByStr(BoltContractAddress), "Get", pb.String(string(randKey)))
 	require.Nil(t, err)
 	queryKey.Nonce = rand.Uint64()
 
@@ -125,7 +125,7 @@ func TestChainClient_SendView(t *testing.T) {
 
 	// test sending read-ledger tx to SendView api
 	view, err := genContractTransaction(pb.TransactionData_BVM, privKey,
-		types.String2Address(BoltContractAddress), "Get", pb.String(string(randKey)))
+		types.NewAddressByStr(BoltContractAddress), "Get", pb.String(string(randKey)))
 	require.Nil(t, err)
 	view.Nonce = rand.Uint64()
 
@@ -165,8 +165,8 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	require.Nil(t, err)
 
 	tx := &pb.Transaction{
-		From:      *from,
-		To:        *to,
+		From:      from,
+		To:        to,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
@@ -178,7 +178,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	require.Nil(t, err)
 	require.True(t, strings.Contains(string(receipt.GetRet()), "not sufficient funds"))
 
-	txx, err := cli.GetTransaction(receipt.TxHash.Hex())
+	txx, err := cli.GetTransaction(receipt.TxHash.String())
 	require.Nil(t, err)
 	require.Equal(t, tx.SignHash(), txx.Tx.SignHash())
 }
@@ -229,7 +229,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 	require.Nil(t, err)
 
 	tx, err := genContractTransaction(pb.TransactionData_BVM, privKey,
-		types.String2Address(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
+		types.NewAddressByStr(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
 	require.Nil(t, err)
 
 	err = tx.Sign(privKey)
@@ -243,7 +243,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		tx, err = genContractTransaction(pb.TransactionData_BVM, privKey,
-			types.String2Address(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
+			types.NewAddressByStr(BoltContractAddress), "Set", pb.String(string("a")), pb.String("1"))
 		require.Nil(t, err)
 
 		err = tx.Sign(privKey)
@@ -293,8 +293,8 @@ func genContractTransaction(
 	}
 
 	tx := &pb.Transaction{
-		From:      *from,
-		To:        *address,
+		From:      from,
+		To:        address,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}

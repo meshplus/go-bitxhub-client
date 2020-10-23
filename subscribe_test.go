@@ -37,13 +37,17 @@ func TestChainClient_Subscribe(t *testing.T) {
 	c, err := cli.Subscribe(ctx, pb.SubscriptionRequest_BLOCK, nil)
 	require.Nil(t, err)
 
+	td := &pb.TransactionData{
+		Amount: 10,
+	}
+	data, err := td.Marshal()
+	require.Nil(t, err)
+
 	go func() {
 		tx := &pb.Transaction{
-			From: from,
-			To:   to,
-			Data: &pb.TransactionData{
-				Amount: 10,
-			},
+			From:      from,
+			To:        to,
+			Payload:   data,
 			Timestamp: time.Now().UnixNano(),
 		}
 
