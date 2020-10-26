@@ -11,6 +11,10 @@ import (
 
 // DeployContract let client deploy the wasm contract into BitXHub.
 func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (contractAddr *types.Address, err error) {
+	if len(contract) == 0 {
+		return nil, fmt.Errorf("can't deploy empty contract")
+	}
+
 	from, err := cli.privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err
@@ -39,6 +43,9 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 		return nil, err
 	}
 
+	if !receipt.IsSuccess() {
+		return nil, fmt.Errorf("deploy contract fail %s", string(receipt.GetRet()))
+	}
 	ret := types.NewAddress(receipt.GetRet())
 
 	return ret, nil
