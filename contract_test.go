@@ -47,3 +47,4 @@ func TestChainClient_InvokeBVMContract(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, string(res.Ret), "10")
 }
+

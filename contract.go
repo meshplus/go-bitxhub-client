@@ -9,6 +9,21 @@ import (
 	"github.com/meshplus/bitxhub-model/pb"
 )
 
+type ServiceInfo struct {
+	Id     string          `json:"id"`     // service id
+	Name   string          `json:"name"`   // service name
+	Desc   string          `json:"desc"`   // service description
+	Items  map[string]Item `json:"items"`  // service entities
+	Status int32           `json:"status"` // 0 => registered, 1 => approved, -1 => rejected
+}
+
+type Item struct {
+	Method     string   `json:"method"`      // method desc
+	ArgType    []string `json:"arg_type"`    // method arg type
+	ReturnType []string `json:"return_type"` // method return type
+	Status     int32    `json:"status"`      // -1 => rejected, 1 => approved
+}
+
 // DeployContract let client deploy the wasm contract into BitXHub.
 func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (contractAddr *types.Address, err error) {
 	from, err := cli.privateKey.PublicKey().Address()
