@@ -101,35 +101,19 @@ func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
 	if ibtp == nil {
 		return nil, fmt.Errorf("empty ibtp not allowed")
 	}
-	//from, err := cli.privateKey.PublicKey().Address()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//tx := &pb.Transaction{
-	//	From:      from,
-	//	To:        InterchainContractAddr,
-	//	IBTP:      ibtp,
-	//	Nonce:     ibtp.Index,
-	//	Timestamp: time.Now().UnixNano(),
-	//}
-	//
-	//if err := tx.Sign(cli.privateKey); err != nil {
-	//	return nil, fmt.Errorf("tx sign: %w", err)
-	//}
-	//return tx, nil
+	from, err := cli.privateKey.PublicKey().Address()
+	if err != nil {
+		return nil, err
+	}
 
-	// todo: remove unnecessary temporary tx payload
-	data, err := ibtp.Marshal()
-	if err != nil {
-		return nil, err
+	tx := &pb.Transaction{
+		From:      from,
+		To:        constant.InterchainContractAddr.Address(),
+		IBTP:      ibtp,
+		Nonce:     ibtp.Index,
+		Timestamp: time.Now().UnixNano(),
 	}
-	tx, err := cli.GenerateContractTx(pb.TransactionData_BVM, constant.InterchainContractAddr.Address(),
-		"HandleIBTP", Bytes(data))
-	if err != nil {
-		return nil, err
-	}
-	tx.IBTP = ibtp
+
 	return tx, nil
 }
 
@@ -165,10 +149,6 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		To:        address,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
-	}
-
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return nil, fmt.Errorf("tx sign: %w", err)
 	}
 
 	return tx, nil
