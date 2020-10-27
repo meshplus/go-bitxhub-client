@@ -192,6 +192,9 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 }
 
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	if tx.From == nil {
+		return "", fmt.Errorf("from address can't be empty")
+	}
 	if opts == nil {
 		opts = new(TransactOpts)
 		opts.From = tx.From.String() // set default from for opts
