@@ -62,7 +62,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 				)
 				// if EnableTLS is set, then setup connection with ca cert
 				if cli.nodeInfo.EnableTLS {
-					creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.IssuerName)
+					creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.CommonName)
 					if err != nil {
 						pool.logger.Errorf("creat tls credentials from %s", cli.nodeInfo.CertPath)
 						continue
