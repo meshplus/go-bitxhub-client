@@ -21,7 +21,7 @@ type NodeInfo struct {
 	Addr       string
 	EnableTLS  bool
 	CertPath   string
-	IssuerName string
+	CommonName string
 }
 
 type Option func(*config)
