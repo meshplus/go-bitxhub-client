@@ -151,5 +151,7 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		Timestamp: time.Now().UnixNano(),
 	}
 
+	tx.TransactionHash = tx.Hash()
+
 	return tx, nil
 }
