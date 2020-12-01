@@ -42,7 +42,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					header := &pb.BlockHeader{}
 					if err := header.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive header error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = header
@@ -50,7 +49,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					block := &pb.Block{}
 					if err := block.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive header error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = block
@@ -58,7 +56,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					event := &pb.Event{}
 					if err := event.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive event error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = event
@@ -66,7 +63,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					ibtp := &pb.IBTP{}
 					if err := ibtp.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive interchain tx error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = ibtp
@@ -74,7 +70,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					wrapper := &pb.InterchainTxWrappers{}
 					if err := wrapper.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive interchain tx wrapper error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = wrapper
@@ -82,7 +77,6 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 					wrapper := &pb.InterchainTxWrappers{}
 					if err := wrapper.Unmarshal(resp.Data); err != nil {
 						cli.logger.Error("receive interchain tx wrapper error: ", resp.Data)
-						close(c)
 						return
 					}
 					ret = wrapper
