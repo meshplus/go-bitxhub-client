@@ -100,6 +100,9 @@ type Client interface {
 	// GetPendingNonceByAccount returns the latest nonce of an account in the pending status,
 	// and it should be the nonce for next transaction
 	GetPendingNonceByAccount(account string) (uint64, error)
+
+	// Delete node according to its pid
+	DelVPNode(pid string) (*pb.Response, error)
 }
 
 type TransactOpts struct {

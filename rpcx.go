@@ -20,7 +20,6 @@ const (
 	SendMultiSignsTimeout    = 10 * time.Second
 	GetReceiptTimeout        = 2 * time.Second
 	GetAccountBalanceTimeout = 2 * time.Second
-	GetInfoTimeout           = 2 * time.Second
 	GetTPSTimeout            = 2 * time.Second
 )
 
@@ -52,28 +51,6 @@ type ChainClient struct {
 	pool        *ConnectionPool
 	normalSeqNo int64
 	ibtpSeqNo   int64
-}
-
-func (cli *ChainClient) GetValidators() (*pb.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
-	defer cancel()
-
-	grpcClient, err := cli.pool.getClient()
-	if err != nil {
-		return nil, err
-	}
-	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_VALIDATORS})
-}
-
-func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
-	defer cancel()
-
-	grpcClient, err := cli.pool.getClient()
-	if err != nil {
-		return nil, err
-	}
-	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_NETWORK})
 }
 
 func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) {
