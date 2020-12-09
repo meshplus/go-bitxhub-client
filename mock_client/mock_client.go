@@ -440,3 +440,18 @@ func (mr *MockClientMockRecorder) GetPendingNonceByAccount(account interface{}) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPendingNonceByAccount", reflect.TypeOf((*MockClient)(nil).GetPendingNonceByAccount), account)
 }
+
+// DelVPNode mocks base method
+func (m *MockClient) DelVPNode(pid string) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelVPNode", pid)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelVPNode indicates an expected call of DelVPNode
+func (mr *MockClientMockRecorder) DelVPNode(pid interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelVPNode", reflect.TypeOf((*MockClient)(nil).DelVPNode), pid)
+}

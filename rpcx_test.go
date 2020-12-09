@@ -192,14 +192,6 @@ func TestChainClient_GetChainMeta(t *testing.T) {
 	require.True(t, chainMeta.GetHeight() > 0)
 }
 
-func TestChainClient_GetNetworkMeta(t *testing.T) {
-	cli, err := Cli()
-	require.Nil(t, err)
-	res, err := cli.GetNetworkMeta()
-	require.Nil(t, err)
-	require.NotNil(t, res)
-}
-
 func TestChainClient_GetAccountBalance(t *testing.T) {
 	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
