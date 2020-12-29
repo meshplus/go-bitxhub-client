@@ -43,6 +43,7 @@ func Cli() (*ChainClient, error) {
 		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
+		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
 	)
 	return cli, err
 }

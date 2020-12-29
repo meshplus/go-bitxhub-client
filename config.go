@@ -15,6 +15,7 @@ type config struct {
 	logger     Logger
 	privateKey crypto.PrivateKey
 	nodesInfo  []*NodeInfo
+	ipfsAddrs  []string
 }
 
 type NodeInfo struct {
@@ -41,6 +42,12 @@ func WithLogger(logger Logger) Option {
 func WithPrivateKey(key crypto.PrivateKey) Option {
 	return func(config *config) {
 		config.privateKey = key
+	}
+}
+
+func WithIPFSInfo(addrs []string) Option {
+	return func(config *config) {
+		config.ipfsAddrs = addrs
 	}
 }
 
