@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/strategy"
@@ -46,15 +47,14 @@ func (cli *ChainClient) IPFSGetToLocal(path string, localfPath string) (*pb.Resp
 
 // IPFSClient .
 type IPFSClient struct {
-	// apiAddrs  []string
-	apiShells map[string]*shell.Shell
+	apiShells sync.Map //map[string]*shell.Shell
 }
 
 // NewIPFSClient .
 func NewIPFSClient(options ...func(*IPFSClient)) (*IPFSClient, error) {
-	m := make(map[string]*shell.Shell)
+	// make(map[string]*shell.Shell)
 	c := &IPFSClient{
-		apiShells: m,
+		apiShells: sync.Map{},
 	}
 	for _, option := range options {
 		option(c)
@@ -74,12 +74,14 @@ func WithAPIAddrs(addrs []string) func(*IPFSClient) {
 
 // AddAPIShell add ipfs api address
 func (ipfsClient *IPFSClient) AddAPIShell(addr string) {
-	ipfsClient.apiShells[addr] = shell.NewShell(addr)
+	ipfsClient.apiShells.Store(addr, shell.NewShell(addr))
+	// ipfsClient.apiShells[addr] = shell.NewShell(addr)
 }
 
 // RmAPIAddr rm ipfs api address
 func (ipfsClient *IPFSClient) RmAPIAddr(addr string) {
-	delete(ipfsClient.apiShells, addr)
+	ipfsClient.apiShells.Delete(addr)
+	// delete(ipfsClient.apiShells, addr)
 }
 
 // IPFSResponse describes ipfs add response
@@ -93,13 +95,13 @@ type IPFSResponse struct {
 // args@localPath e.g. /tmp/eg.json
 // returns cid of file stored on ipfs
 func (ipfsClient *IPFSClient) PutFromLocal(localfPath string) ([]byte, error) {
-	if len(ipfsClient.apiShells) <= 0 {
-		return nil, fmt.Errorf("api shells nil")
-	}
-
 	var shells []*shell.Shell
-	for _, shell := range ipfsClient.apiShells {
-		shells = append(shells, shell)
+	ipfsClient.apiShells.Range(func(key interface{}, value interface{}) bool {
+		shells = append(shells, value.(*shell.Shell))
+		return true
+	})
+	if len(shells) <= 0 {
+		return nil, fmt.Errorf("api shells are null")
 	}
 	limit := uint(len(shells) - 1)
 
@@ -130,13 +132,13 @@ func (ipfsClient *IPFSClient) PutFromLocal(localfPath string) ([]byte, error) {
 // args@path e.g. /ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme
 // returns content of file
 func (ipfsClient *IPFSClient) Get(path string) ([]byte, error) {
-	if len(ipfsClient.apiShells) <= 0 {
-		return nil, fmt.Errorf("api address nil")
-	}
-
 	var shells []*shell.Shell
-	for _, shell := range ipfsClient.apiShells {
-		shells = append(shells, shell)
+	ipfsClient.apiShells.Range(func(key interface{}, value interface{}) bool {
+		shells = append(shells, value.(*shell.Shell))
+		return true
+	})
+	if len(shells) <= 0 {
+		return nil, fmt.Errorf("api shells are null")
 	}
 	limit := uint(len(shells) - 1)
 
