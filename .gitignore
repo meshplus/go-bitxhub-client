@@ -4,3 +4,7 @@
 node_modules
 vendor
 local_test.go
+
+testdata/ipfs-get.json
+ipfs/repo.lock
+ipfs/swarm.key
