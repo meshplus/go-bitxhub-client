@@ -7,8 +7,8 @@ require (
 	github.com/docker/docker v1.13.1
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
-	github.com/meshplus/bitxhub-kit v1.1.2-0.20201023073721-052e6b89ea39
-	github.com/meshplus/bitxhub-model v1.1.2-0.20201221070800-ca8184215353
+	github.com/meshplus/bitxhub-kit v1.1.2-0.20201203072410-8a0383a6870d
+	github.com/meshplus/bitxhub-model v1.1.2-0.20210107045700-cee670a2e117
 	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect

@@ -22,6 +22,12 @@ var (
 		},
 		logger: logrus.New(),
 	}
+	cfg1 = &config{
+		nodesInfo: []*NodeInfo{
+			{Addr: "localhost:60012"},
+		},
+		logger: logrus.New(),
+	}
 	BoltContractAddress = "0x000000000000000000000000000000000000000b"
 	value               = "value"
 )

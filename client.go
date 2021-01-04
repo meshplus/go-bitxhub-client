@@ -112,6 +112,14 @@ type Client interface {
 
 	// IPFSGetToLocal gets from ipfs and saves to local file path
 	IPFSGetToLocal(path string, localfPath string) (*pb.Response, error)
+	//Check whethe there is a master pier connect to the BitXHub.
+	CheckMasterPier(address string) (*pb.Response, error)
+
+	//Set the master pier connect to the BitXHub.
+	SetMasterPier(address string, index string, timeout int64) (*pb.Response, error)
+
+	//Update the master pier status
+	HeartBeat(address string, index string) (*pb.Response, error)
 }
 
 type TransactOpts struct {
