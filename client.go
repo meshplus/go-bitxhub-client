@@ -103,6 +103,15 @@ type Client interface {
 
 	// Delete node according to its pid
 	DelVPNode(pid string) (*pb.Response, error)
+
+	// IPFSPutFromLocal puts local file to ipfs network
+	IPFSPutFromLocal(localfPath string) (*pb.Response, error)
+
+	// IPFSGet gets from ipfs network
+	IPFSGet(path string) (*pb.Response, error)
+
+	// IPFSGetToLocal gets from ipfs and saves to local file path
+	IPFSGetToLocal(path string, localfPath string) (*pb.Response, error)
 }
 
 type TransactOpts struct {

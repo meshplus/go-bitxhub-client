@@ -62,7 +62,7 @@ func NewIPFSClient(options ...func(*IPFSClient)) (*IPFSClient, error) {
 	return c, nil
 }
 
-// WithAPIAddrs .
+// WithAPIAddrs returns ipfs client
 // e.g []string{"http://localhost:5001"}
 func WithAPIAddrs(addrs []string) func(*IPFSClient) {
 	return func(i *IPFSClient) {
