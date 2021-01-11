@@ -3,7 +3,6 @@ module github.com/meshplus/go-bitxhub-client
 go 1.13
 
 require (
-	github.com/Kubuxu/go-ipfs-swarm-key-gen v0.0.0-20170218193930-0ee739ec6d32 // indirect
 	github.com/Rican7/retry v0.1.0
 	github.com/docker/docker v1.13.1
 	github.com/golang/mock v1.4.3

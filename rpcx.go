@@ -217,7 +217,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
-		return "", err
+		return "", newBrokenNetworkError(err)
 	}
 
 	return msg.TxHash, err
@@ -237,7 +237,7 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 
 	receipt, err := grpcClient.broker.SendView(ctx, tx)
 	if err != nil {
-		return nil, err
+		return nil, newBrokenNetworkError(err)
 	}
 
 	return receipt, nil
@@ -285,7 +285,7 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 		Address: account,
 	})
 	if err != nil {
-		return 0, err
+		return 0, newBrokenNetworkError(err)
 	}
 	return strconv.ParseUint(string(res.Data), 10, 64)
 }
@@ -309,7 +309,7 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 	})
 
 	if err != nil {
-		return 0, err
+		return 0, newBrokenNetworkError(err)
 	}
 
 	if resp == nil || resp.Data == nil {
