@@ -65,7 +65,11 @@ func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) 
 	request := &pb.Address{
 		Address: address,
 	}
-	return grpcClient.broker.GetAccountBalance(ctx, request)
+	response, err := grpcClient.broker.GetAccountBalance(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func New(opts ...Option) (*ChainClient, error) {
@@ -141,9 +145,13 @@ func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse,
 		return nil, err
 	}
 
-	return grpcClient.broker.GetTransaction(ctx, &pb.TransactionHashMsg{
+	response, err := grpcClient.broker.GetTransaction(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) SetPrivateKey(key crypto.PrivateKey) {
@@ -159,7 +167,11 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 		return nil, err
 	}
 
-	return grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
+	response, err := grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
@@ -217,7 +229,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
-		return "", newBrokenNetworkError(err)
+		return "", fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	return msg.TxHash, err
@@ -237,7 +249,7 @@ func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
 
 	receipt, err := grpcClient.broker.SendView(ctx, tx)
 	if err != nil {
-		return nil, newBrokenNetworkError(err)
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	return receipt, nil
@@ -252,9 +264,13 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 		return nil, err
 	}
 
-	return grpcClient.broker.GetReceipt(ctx, &pb.TransactionHashMsg{
+	response, err := grpcClient.broker.GetReceipt(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
@@ -266,10 +282,14 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 		return nil, err
 	}
 
-	return grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
+	response, err := grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
 		Content: content,
 		Type:    typ,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error) {
@@ -285,7 +305,7 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 		Address: account,
 	})
 	if err != nil {
-		return 0, newBrokenNetworkError(err)
+		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 	return strconv.ParseUint(string(res.Data), 10, 64)
 }
@@ -309,7 +329,7 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 	})
 
 	if err != nil {
-		return 0, newBrokenNetworkError(err)
+		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	if resp == nil || resp.Data == nil {

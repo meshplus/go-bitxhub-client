@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/meshplus/bitxhub-model/pb"
@@ -20,7 +21,12 @@ func (cli *ChainClient) DelVPNode(pid string) (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.DelVPNode(ctx, &pb.DelVPNodeRequest{pid})
+
+	response, err := grpcClient.broker.DelVPNode(ctx, &pb.DelVPNodeRequest{Pid: pid})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetValidators() (*pb.Response, error) {
@@ -31,7 +37,11 @@ func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_VALIDATORS})
+	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_VALIDATORS})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
@@ -42,5 +52,9 @@ func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_NETWORK})
+	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_NETWORK})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }

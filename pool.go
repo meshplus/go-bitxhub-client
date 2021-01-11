@@ -88,7 +88,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 				return nil
 			}
 		}
-		return newBrokenNetworkError(fmt.Errorf("all clients are not usable"))
+		return fmt.Errorf("all clients are not usable, %w", ErrBrokenNetwork)
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(5)); err != nil {
 		return nil, err
 	}

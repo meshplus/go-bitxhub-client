@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/meshplus/bitxhub-model/pb"
@@ -26,7 +27,11 @@ func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksRespon
 		Start: start,
 		End:   end,
 	}
-	return grpcClient.broker.GetBlocks(ctx, request)
+	response, err := grpcClient.broker.GetBlocks(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error) {
@@ -41,7 +46,11 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 		Type:  blockType,
 		Value: value,
 	}
-	return grpcClient.broker.GetBlock(ctx, request)
+	response, err := grpcClient.broker.GetBlock(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
 
 func (cli *ChainClient) GetChainStatus() (*pb.Response, error) {
@@ -52,5 +61,9 @@ func (cli *ChainClient) GetChainStatus() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_CHAIN_STATUS})
+	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_CHAIN_STATUS})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
 }
