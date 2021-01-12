@@ -83,12 +83,12 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			}
 
 			s := cli.conn.GetState()
-			if s == connectivity.Idle || s == connectivity.Ready {
+			if s == connectivity.Idle || s == connectivity.Ready || s == connectivity.Connecting {
 				res = cli
 				return nil
 			}
 		}
-		return fmt.Errorf("all clients are not usable")
+		return fmt.Errorf("all clients are not usable, %w", ErrBrokenNetwork)
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(5)); err != nil {
 		return nil, err
 	}

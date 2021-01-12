@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/meshplus/bitxhub-model/pb"
 )
@@ -19,7 +20,7 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 
 	subClient, err := grpcClient.broker.Subscribe(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	c := make(chan interface{})

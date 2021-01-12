@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/meshplus/bitxhub-model/pb"
@@ -18,7 +19,7 @@ func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, c
 		End:   end,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	go func() {
@@ -56,7 +57,7 @@ func (cli *ChainClient) GetInterchainTxWrappers(ctx context.Context, pid string,
 		Pid:   pid,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	go func() {
