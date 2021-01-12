@@ -47,3 +47,18 @@ func Cli() (*ChainClient, error) {
 	)
 	return cli, err
 }
+
+func Cli1() (*ChainClient, error) {
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	cli, err := New(
+		WithNodesInfo(cfg1.nodesInfo...),
+		WithLogger(cfg1.logger),
+		WithPrivateKey(privKey),
+		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
+	)
+	return cli, err
+}
