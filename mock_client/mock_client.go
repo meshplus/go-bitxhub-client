@@ -500,3 +500,48 @@ func (mr *MockClientMockRecorder) IPFSGetToLocal(path, localfPath interface{}) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IPFSGetToLocal", reflect.TypeOf((*MockClient)(nil).IPFSGetToLocal), path, localfPath)
 }
+
+// CheckMasterPier mocks base method
+func (m *MockClient) CheckMasterPier(address string) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckMasterPier", address)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckMasterPier indicates an expected call of CheckMasterPier
+func (mr *MockClientMockRecorder) CheckMasterPier(address interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMasterPier", reflect.TypeOf((*MockClient)(nil).CheckMasterPier), address)
+}
+
+// SetMasterPier mocks base method
+func (m *MockClient) SetMasterPier(address, index string, timeout int64) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMasterPier", address, index, timeout)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMasterPier indicates an expected call of SetMasterPier
+func (mr *MockClientMockRecorder) SetMasterPier(address, index, timeout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMasterPier", reflect.TypeOf((*MockClient)(nil).SetMasterPier), address, index, timeout)
+}
+
+// HeartBeat mocks base method
+func (m *MockClient) HeartBeat(address, index string) (*pb.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HeartBeat", address, index)
+	ret0, _ := ret[0].(*pb.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HeartBeat indicates an expected call of HeartBeat
+func (mr *MockClientMockRecorder) HeartBeat(address, index interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HeartBeat", reflect.TypeOf((*MockClient)(nil).HeartBeat), address, index)
+}
