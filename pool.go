@@ -57,9 +57,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 		for _, cli := range pool.connections {
 			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 				// try to build a connect or reconnect
-				var (
-					opt grpc.DialOption
-				)
+				opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(500 * time.Millisecond)}
 				// if EnableTLS is set, then setup connection with ca cert
 				if cli.nodeInfo.EnableTLS {
 					creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.CommonName)
@@ -67,13 +65,12 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 						pool.logger.Errorf("creat tls credentials from %s", cli.nodeInfo.CertPath)
 						continue
 					}
-					opt = grpc.WithTransportCredentials(creds)
+					opts = append(opts, grpc.WithTransportCredentials(creds))
 				} else {
-					opt = grpc.WithInsecure()
+					opts = append(opts, grpc.WithInsecure())
 				}
-				conn, err := grpc.Dial(cli.nodeInfo.Addr, opt)
+				conn, err := grpc.Dial(cli.nodeInfo.Addr, opts...)
 				if err != nil {
-					pool.logger.Errorf("dial with Addr: %v fail", cli.nodeInfo.Addr)
 					continue
 				}
 				cli.conn = conn
