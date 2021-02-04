@@ -68,6 +68,9 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	ret, err := cli.GetReceipt(hash)
 	require.Nil(t, err)
 
+	_, err = cli.ConfirmReceipt(hash)
+	require.Nil(t, err)
+
 	require.Equal(t, hash, ret.TxHash.String())
 
 	err = cli.Stop()

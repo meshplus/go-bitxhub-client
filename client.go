@@ -37,6 +37,9 @@ type Client interface {
 	//the status of the receipt is a sign of whether the transaction is successful.
 	GetReceipt(hash string) (*pb.Receipt, error)
 
+	//Confirm the receipt by transaction hash,
+	ConfirmReceipt(hash string) (*pb.Receipt, error)
+
 	//Get transaction from BitXHub by transaction hash.
 	GetTransaction(hash string) (*pb.GetTransactionResponse, error)
 

@@ -125,6 +125,30 @@ func (cli *ChainClient) GetReceipt(hash string) (*pb.Receipt, error) {
 	return receipt, nil
 }
 
+// ConfirmReceipts confirm receipts by tx hashes
+func (cli *ChainClient) ConfirmReceipt(hash string) (*pb.Receipt, error) {
+	var receipt *pb.Receipt
+	var err error
+
+	err = retry.Retry(func(attempt uint) error {
+		receipt, err = cli.confirmReceipt(hash)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	},
+		strategy.Limit(5),
+		strategy.Backoff(backoff.Fibonacci(500*time.Millisecond)),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return receipt, nil
+}
+
 func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetTransactionTimeout)
 	defer cancel()
@@ -246,6 +270,20 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	}
 
 	return grpcClient.broker.GetReceipt(ctx, &pb.TransactionHashMsg{
+		TxHash: hash,
+	})
+}
+
+func (cli *ChainClient) confirmReceipt(hash string) (*pb.Receipt, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return grpcClient.broker.ConfirmReceipt(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
 }
