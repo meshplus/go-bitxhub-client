@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"testing"
+	"time"
 
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-model/pb"
@@ -42,6 +43,7 @@ func Cli() (*ChainClient, error) {
 		WithNodesInfo(cfg.nodesInfo...),
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
+		WithTimeoutLimit(500*time.Millisecond),
 	)
 	return cli, err
 }
@@ -56,6 +58,7 @@ func Cli1() (*ChainClient, error) {
 		WithNodesInfo(cfg1.nodesInfo...),
 		WithLogger(cfg1.logger),
 		WithPrivateKey(privKey),
+		WithTimeoutLimit(500*time.Millisecond),
 	)
 	return cli, err
 }

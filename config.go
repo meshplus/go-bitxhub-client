@@ -3,18 +3,23 @@ package rpcx
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/fileutil"
 	"github.com/meshplus/bitxhub-kit/log"
 )
 
-const blockChanNumber = 1024
+const (
+	blockChanNumber = 1024
+	defaultTimeout  = 1 * time.Second
+)
 
 type config struct {
-	logger     Logger
-	privateKey crypto.PrivateKey
-	nodesInfo  []*NodeInfo
+	logger       Logger
+	privateKey   crypto.PrivateKey
+	nodesInfo    []*NodeInfo
+	timeoutLimit time.Duration // timeout limit config for dialing grpc
 }
 
 type NodeInfo struct {
@@ -44,6 +49,12 @@ func WithPrivateKey(key crypto.PrivateKey) Option {
 	}
 }
 
+func WithTimeoutLimit(limit time.Duration) Option {
+	return func(config *config) {
+		config.timeoutLimit = limit
+	}
+}
+
 func generateConfig(opts ...Option) (*config, error) {
 	config := &config{}
 	for _, opt := range opts {
@@ -68,6 +79,10 @@ func checkConfig(config *config) error {
 
 	if config.logger == nil {
 		config.logger = log.NewWithModule("rpcx")
+	}
+
+	if config.timeoutLimit == 0 {
+		config.timeoutLimit = defaultTimeout
 	}
 
 	// if EnableTLS is set, then tls certs must be provided

@@ -20,8 +20,10 @@ type grpcClient struct {
 }
 
 type ConnectionPool struct {
-	connections []*grpcClient
-	logger      Logger
+	timeoutLimit time.Duration // timeout limit config for dialing grpc
+	currentConn  *grpcClient
+	connections  []*grpcClient
+	logger       Logger
 }
 
 // init a connection
@@ -53,13 +55,15 @@ func (pool *ConnectionPool) Close() error {
 
 // get grpcClient will try to get idle grpcClient
 func (pool *ConnectionPool) getClient() (*grpcClient, error) {
-	var res *grpcClient
+	if pool.currentConn != nil && pool.currentConn.available() {
+		return pool.currentConn, nil
+	}
 	if err := retry.Retry(func(attempt uint) error {
 		randomIndex := rand.Intn(len(pool.connections))
 		cli := pool.connections[randomIndex]
 		if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
 			// try to build a connect or reconnect
-			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(1 * time.Second)}
+			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
 			// if EnableTLS is set, then setup connection with ca cert
 			if cli.nodeInfo.EnableTLS {
 				creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.CommonName)
@@ -78,13 +82,13 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			}
 			cli.conn = conn
 			cli.broker = pb.NewChainBrokerClient(conn)
-			res = cli
+			pool.currentConn = cli
+			pool.logger.Infof("Establish connection with bitxhub %s successfully", cli.nodeInfo.Addr)
 			return nil
 		}
 
-		s := cli.conn.GetState()
-		if s == connectivity.Idle || s == connectivity.Ready {
-			res = cli
+		if cli.available() {
+			pool.currentConn = cli
 			return nil
 		}
 		pool.logger.Debugf("client for %s is not usable", pool.connections[randomIndex].nodeInfo.Addr)
@@ -93,5 +97,10 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 		return nil, err
 	}
 
-	return res, nil
+	return pool.currentConn, nil
+}
+
+func (grpcCli *grpcClient) available() bool {
+	s := grpcCli.conn.GetState()
+	return s == connectivity.Idle || s == connectivity.Ready
 }
