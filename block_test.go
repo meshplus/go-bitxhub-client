@@ -2,6 +2,7 @@ package rpcx
 
 import (
 	"testing"
+	"time"
 
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
@@ -44,6 +45,7 @@ func Cli() (*ChainClient, error) {
 		WithLogger(cfg.logger),
 		WithPrivateKey(privKey),
 		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
+		WithTimeoutLimit(500*time.Millisecond),
 	)
 	return cli, err
 }
@@ -59,6 +61,7 @@ func Cli1() (*ChainClient, error) {
 		WithLogger(cfg1.logger),
 		WithPrivateKey(privKey),
 		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
+		WithTimeoutLimit(500*time.Millisecond),
 	)
 	return cli, err
 }
