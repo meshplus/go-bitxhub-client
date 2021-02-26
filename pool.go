@@ -95,7 +95,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 		}
 		pool.logger.Debugf("Client for %s is not usable", pool.connections[randomIndex].nodeInfo.Addr)
 		return fmt.Errorf("chosen client is not reachable")
-	}, strategy.Wait(500*time.Millisecond), strategy.Limit(5)); err != nil {
+	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.connections)))); err != nil {
 		return nil, err
 	}
 
