@@ -10,6 +10,8 @@ import (
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
+	"github.com/looplab/fsm"
+	appchainmgr "github.com/meshplus/bitxhub-core/appchain-mgr"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
 )
@@ -25,16 +27,16 @@ const (
 )
 
 type Appchain struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Validators    string `json:"validators"`
-	ConsensusType int32  `json:"consensus_type"`
-	// 0 => registered, 1 => approved, -1 => rejected
-	Status    int32  `json:"status"`
-	ChainType string `json:"chain_type"`
-	Desc      string `json:"desc"`
-	Version   string `json:"version"`
-	PublicKey string `json:"public_key"`
+	ID            string                     `json:"id"`
+	Name          string                     `json:"name"`
+	Validators    string                     `json:"validators"`
+	ConsensusType int32                      `json:"consensus_type"`
+	Status        appchainmgr.AppchainStatus `json:"status"`
+	ChainType     string                     `json:"chain_type"`
+	Desc          string                     `json:"desc"`
+	Version       string                     `json:"version"`
+	PublicKey     string                     `json:"public_key"`
+	FSM           *fsm.FSM                   `json:"fsm"`
 }
 
 type Interchain struct {

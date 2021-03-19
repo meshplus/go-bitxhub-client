@@ -8,13 +8,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/bitxhub-model/constant"
-
+	appchain_mgr "github.com/meshplus/bitxhub-core/appchain-mgr"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-kit/types"
+	"github.com/meshplus/bitxhub-model/constant"
 	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
 )
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
@@ -137,6 +138,21 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess())
+	chainId := gjson.Get(string(r.Ret), "chain_id").String()
+
+	// regiter approve
+	r, err = cli.InvokeBVMContract(
+		constant.AppchainMgrContractAddr.Address(),
+		"GetAppchain", nil, String(chainId))
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+
+	r1, err := cli.InvokeBVMContract(
+		constant.AppchainMgrContractAddr.Address(),
+		"Manager", nil, String(string(appchain_mgr.EventRegister)), String("approve"), Bytes(r.Ret),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r1.IsSuccess(), string(r1.Ret))
 
 	// deploy rule for validation
 	deployRule(t, cli, from)
@@ -150,7 +166,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 		IBTPNonce: ibtp.Index,
 	})
 	require.Nil(t, err)
-	require.Equal(t, true, r.IsSuccess())
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }
 
 func deployRule(t *testing.T, cli *ChainClient, from types.Address) {

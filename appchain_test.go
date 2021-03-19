@@ -8,7 +8,6 @@ import (
 
 	"github.com/meshplus/bitxhub-model/constant"
 
-	"github.com/docker/docker/pkg/testutil/assert"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-model/pb"
@@ -56,16 +55,6 @@ func TestAppChain_Register_Audit(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, appChain.ID)
 	AppChainID = appChain.ID
-
-	adminCli := getAdminCli(t)
-	args = []*pb.Arg{
-		String(AppChainID),
-		Int32(1),               //audit approve
-		String("Audit passed"), //desc
-	}
-	res, err = adminCli.InvokeBVMContract(constant.AppchainMgrContractAddr.Address(), "Audit", nil, args...)
-	require.Nil(t, err)
-	assert.Contains(t, string(res.Ret), "successfully")
 }
 
 // getAdminCli returns client with admin account.
