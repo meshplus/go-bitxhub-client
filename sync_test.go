@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 	"time"
 
-	appchain_mgr "github.com/meshplus/bitxhub-core/appchain-mgr"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-kit/types"
@@ -133,26 +133,41 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	r, err := cli.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
 		"Register", nil, String(string(validators)),
-		Int32(1), String("hyperchain"), String("hpc"),
+		String("rbft"), String("hyperchain"), String("hpc"),
 		String("hyperchain"), String("1.0.0"), String(string(pubKey)),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess())
-	chainId := gjson.Get(string(r.Ret), "chain_id").String()
+	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
 
 	// regiter approve
-	r, err = cli.InvokeBVMContract(
-		constant.AppchainMgrContractAddr.Address(),
-		"GetAppchain", nil, String(chainId))
+	// you should put your bitxhub/scripts/build/node1/key.json to testdata/node1/key.json.
+	adminKey1 := filepath.Join("./testdata/node1", "key.json")
+	adminKey2 := filepath.Join("./testdata/node2", "key.json")
+	adminKey3 := filepath.Join("./testdata/node3", "key.json")
+	adminCli1 := getAdminCli(t, adminKey1)
+	adminCli2 := getAdminCli(t, adminKey2)
+	adminCli3 := getAdminCli(t, adminKey3)
+	r, err = adminCli1.InvokeBVMContract(
+		constant.GovernanceContractAddr.Address(),
+		"Vote", nil, String(proposalId), String("approve"), String("reason"),
+	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 
-	r1, err := cli.InvokeBVMContract(
-		constant.AppchainMgrContractAddr.Address(),
-		"Manager", nil, String(string(appchain_mgr.EventRegister)), String("approve"), Bytes(r.Ret),
+	r, err = adminCli2.InvokeBVMContract(
+		constant.GovernanceContractAddr.Address(),
+		"Vote", nil, String(proposalId), String("approve"), String("reason"),
 	)
 	require.Nil(t, err)
-	require.Equal(t, true, r1.IsSuccess(), string(r1.Ret))
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+
+	r, err = adminCli3.InvokeBVMContract(
+		constant.GovernanceContractAddr.Address(),
+		"Vote", nil, String(proposalId), String("approve"), String("reason"),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 
 	// deploy rule for validation
 	deployRule(t, cli, from)

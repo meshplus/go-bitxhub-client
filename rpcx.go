@@ -30,7 +30,7 @@ type Appchain struct {
 	ID            string                     `json:"id"`
 	Name          string                     `json:"name"`
 	Validators    string                     `json:"validators"`
-	ConsensusType int32                      `json:"consensus_type"`
+	ConsensusType string                     `json:"consensus_type"`
 	Status        appchainmgr.AppchainStatus `json:"status"`
 	ChainType     string                     `json:"chain_type"`
 	Desc          string                     `json:"desc"`

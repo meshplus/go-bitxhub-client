@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/looplab/fsm v0.2.0
-	github.com/meshplus/bitxhub-core v0.1.0-rc1.0.20210318102029-494ee3060b0c
+	github.com/meshplus/bitxhub-core v0.1.0-rc1.0.20210330035001-b327cf056572
 	github.com/meshplus/bitxhub-kit v1.1.2-0.20201203072410-8a0383a6870d
 	github.com/meshplus/bitxhub-model v1.1.2-0.20210312014622-c3ad532b64ad
 	github.com/sirupsen/logrus v1.5.0

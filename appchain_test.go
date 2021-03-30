@@ -3,7 +3,6 @@ package rpcx
 import (
 	"encoding/hex"
 	"encoding/json"
-	"path/filepath"
 	"testing"
 
 	"github.com/meshplus/bitxhub-model/constant"
@@ -41,7 +40,7 @@ func TestAppChain_Register_Audit(t *testing.T) {
 	var pubKeyStr string = hex.EncodeToString(pubKey.Bytes())
 	args := []*pb.Arg{
 		String(""),                 //validators
-		Int32(0),                   //consensus_type
+		String("rbft"),             //consensus_type
 		String("hyperchain"),       //chain_type
 		String("AppChain1"),        //name
 		String("Appchain for tax"), //desc
@@ -58,9 +57,9 @@ func TestAppChain_Register_Audit(t *testing.T) {
 }
 
 // getAdminCli returns client with admin account.
-func getAdminCli(t *testing.T) *ChainClient {
+func getAdminCli(t *testing.T, keyPath string) *ChainClient {
 	// you should put your bitxhub/scripts/build/node1/key.json to testdata/key.json.
-	k, err := asym.RestorePrivateKey(filepath.Join("./testdata", "key.json"), keyPassword)
+	k, err := asym.RestorePrivateKey(keyPath, keyPassword)
 	require.Nil(t, err)
 	var cfg = &config{
 		nodesInfo: []*NodeInfo{
