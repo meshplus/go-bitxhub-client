@@ -123,7 +123,6 @@ type Client interface {
 }
 
 type TransactOpts struct {
-	From        string
-	NormalNonce uint64
-	IBTPNonce   uint64
+	From  string
+	Nonce uint64
 }

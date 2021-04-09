@@ -176,10 +176,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 
 	tx, _ := cli.GenerateIBTPTx(ibtp)
 	tx.Extra = proof
-	r, err = cli.SendTransactionWithReceipt(tx, &TransactOpts{
-		From:      ibtpAccount(ibtp),
-		IBTPNonce: ibtp.Index,
-	})
+	r, err = cli.SendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }

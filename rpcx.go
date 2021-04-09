@@ -206,23 +206,15 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 		return "", err
 	}
 
-	if opts.IBTPNonce != 0 && opts.NormalNonce != 0 {
-		return "", fmt.Errorf("can't set ibtp nonce and normal nonce at the same time")
-	}
-
 	var nonce uint64
-	if opts.IBTPNonce == 0 && opts.NormalNonce == 0 {
-		// not nonce set for tx, then use latest nonce from bitxhub
+	if opts.Nonce == 0 {
+		// no nonce set for tx, then use latest nonce from bitxhub
 		nonce, err = cli.GetPendingNonceByAccount(opts.From)
 		if err != nil {
 			return "", fmt.Errorf("failed to retrieve account nonce: %w", err)
 		}
 	} else {
-		if opts.IBTPNonce != 0 {
-			nonce = opts.IBTPNonce
-		} else {
-			nonce = opts.NormalNonce
-		}
+		nonce = opts.Nonce
 	}
 	tx.Nonce = nonce
 
