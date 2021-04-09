@@ -2,7 +2,6 @@ package rpcx
 
 import (
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/meshplus/bitxhub-kit/crypto"
@@ -95,8 +94,8 @@ func checkConfig(config *config) error {
 	// if EnableTLS is set, then tls certs must be provided
 	for _, nodeInfo := range config.nodesInfo {
 		if nodeInfo.EnableTLS {
-			if !fileutil.Exist(filepath.Join(nodeInfo.CertPath, "ca.cert")) {
-				return fmt.Errorf("ca.cert file is not found while tls is enabled")
+			if !fileutil.Exist(nodeInfo.CertPath) {
+				return fmt.Errorf("ca cert file %s is not found while tls is enabled", nodeInfo.CertPath)
 			}
 		}
 	}
