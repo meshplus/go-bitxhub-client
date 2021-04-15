@@ -14,6 +14,8 @@ import (
 	appchainmgr "github.com/meshplus/bitxhub-core/appchain-mgr"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -180,7 +182,7 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
 	hash, err := cli.sendTransaction(tx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("send tx error: %s", err)
+		return nil, fmt.Errorf("send tx error: %w", err)
 	}
 
 	receipt, err := cli.GetReceipt(hash)
@@ -192,7 +194,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 
 func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
 	if tx.From == nil {
-		return "", fmt.Errorf("from address can't be empty")
+		return "", fmt.Errorf("%w: from address can't be empty", ErrReconstruct)
 	}
 	if opts == nil {
 		opts = new(TransactOpts)
@@ -211,7 +213,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 		// no nonce set for tx, then use latest nonce from bitxhub
 		nonce, err = cli.GetPendingNonceByAccount(opts.From)
 		if err != nil {
-			return "", fmt.Errorf("failed to retrieve account nonce: %w", err)
+			return "", fmt.Errorf("%w: failed to retrieve nonce for account %s for %s", ErrBrokenNetwork, opts.From, err.Error())
 		}
 	} else {
 		nonce = opts.Nonce
@@ -219,12 +221,20 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 	tx.Nonce = nonce
 
 	if err := tx.Sign(cli.privateKey); err != nil {
-		return "", fmt.Errorf("tx sign: %w", err)
+		return "", fmt.Errorf("%w: for reason %s", ErrSignTx, err.Error())
 	}
 
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
-		return "", fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+		st := status.Convert(err)
+		switch st.Code() {
+		case codes.Unknown, codes.Internal:
+			return "", fmt.Errorf("%w: %s", ErrBrokenNetwork, st.Err().Error())
+		case codes.InvalidArgument:
+			return "", fmt.Errorf("%w: %s", ErrReconstruct, st.Err().Error())
+		default:
+			return "", err
+		}
 	}
 
 	return msg.TxHash, err
@@ -263,7 +273,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 		TxHash: hash,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+		return nil, fmt.Errorf("%w: %s", ErrBrokenNetwork, err.Error())
 	}
 	return response, nil
 }
@@ -300,7 +310,7 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 		Address: account,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+		return 0, err
 	}
 	return strconv.ParseUint(string(res.Data), 10, 64)
 }

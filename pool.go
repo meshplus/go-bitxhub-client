@@ -71,7 +71,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 				creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.CommonName)
 				if err != nil {
 					pool.logger.Debugf("Creat tls credentials from %s for client %s", cli.nodeInfo.CertPath, cli.nodeInfo.Addr)
-					return fmt.Errorf("chosen client is not reachable")
+					return fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
 				}
 				opts = append(opts, grpc.WithTransportCredentials(creds))
 			} else {
@@ -80,7 +80,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			conn, err := grpc.Dial(cli.nodeInfo.Addr, opts...)
 			if err != nil {
 				pool.logger.Debugf("Dial with addr: %s fail", cli.nodeInfo.Addr)
-				return fmt.Errorf("chosen client is not reachable")
+				return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, cli.nodeInfo.Addr)
 			}
 			cli.conn = conn
 			cli.broker = pb.NewChainBrokerClient(conn)
@@ -94,7 +94,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			return nil
 		}
 		pool.logger.Debugf("Client for %s is not usable", pool.connections[randomIndex].nodeInfo.Addr)
-		return fmt.Errorf("chosen client is not reachable")
+		return fmt.Errorf("%w: all nodes are not available", ErrBrokenNetwork)
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.connections)))); err != nil {
 		return nil, err
 	}

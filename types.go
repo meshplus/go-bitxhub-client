@@ -1,14 +1,9 @@
 package rpcx
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/meshplus/bitxhub-model/pb"
-)
-
-var (
-	ErrBrokenNetwork = errors.New("broken network")
 )
 
 func Int32(i int32) *pb.Arg {
