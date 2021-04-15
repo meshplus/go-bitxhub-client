@@ -3,19 +3,32 @@ package rpcx
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/meshplus/bitxid"
+
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/constant"
 	"github.com/meshplus/bitxhub-model/pb"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
+)
+
+const (
+	keyPassword              = "bitxhub"
+	dstAppchainMethod        = "did:bitxhub:appchain1:."
+	appchainAdminDIDPrefix   = "did:bitxhub:appchain"
+	relaychainAdminDIDPrefix = "did:bitxhub:relayroot"
+	docAddr                  = "/ipfs/QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
+	docHash                  = "QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
 )
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
@@ -56,8 +69,9 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	meta, err := cli.GetChainMeta()
 	require.Nil(t, err)
 
+	did := genUniqueAppchainDID(from.String())
 	ch := make(chan *pb.InterchainTxWrappers, 10)
-	require.Nil(t, cli.GetInterchainTxWrappers(ctx, to.String(), meta.Height, meta.Height+100, ch))
+	require.Nil(t, cli.GetInterchainTxWrappers(ctx, did, meta.Height, meta.Height+100, ch))
 
 	for {
 		select {
@@ -126,19 +140,9 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	proof, err := ioutil.ReadFile("./testdata/proof_1.0.0_rc")
 	require.Nil(t, err)
 
-	pubKey, err := cli.privateKey.PublicKey().Bytes()
+	rawPubKey, err := cli.privateKey.PublicKey().Bytes()
 	require.Nil(t, err)
-
-	// register appchain
-	r, err := cli.InvokeBVMContract(
-		constant.AppchainMgrContractAddr.Address(),
-		"Register", nil, String(string(validators)),
-		String("rbft"), String("hyperchain"), String("hpc"),
-		String("hyperchain"), String("1.0.0"), String(string(pubKey)),
-	)
-	require.Nil(t, err)
-	require.Equal(t, true, r.IsSuccess())
-	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
+	pubKey := base64.StdEncoding.EncodeToString(rawPubKey)
 
 	// regiter approve
 	// you should put your bitxhub/scripts/build/node1/key.json to testdata/node1/key.json.
@@ -148,6 +152,63 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	adminCli1 := getAdminCli(t, adminKey1)
 	adminCli2 := getAdminCli(t, adminKey2)
 	adminCli3 := getAdminCli(t, adminKey3)
+
+	priAdmin1, err := asym.RestorePrivateKey(adminKey1, "bitxhub")
+	require.Nil(t, err)
+	fromAdmin1, err := priAdmin1.PublicKey().Address()
+	require.Nil(t, err)
+
+	require.Nil(t, err)
+	priAdmin2, err := asym.RestorePrivateKey(adminKey2, "bitxhub")
+	require.Nil(t, err)
+	fromAdmin2, err := priAdmin2.PublicKey().Address()
+	require.Nil(t, err)
+	priAdmin3, err := asym.RestorePrivateKey(adminKey3, "bitxhub")
+	require.Nil(t, err)
+	fromAdmin3, err := priAdmin3.PublicKey().Address()
+	require.Nil(t, err)
+
+	// init registry first
+	adminDid := genUniqueRelaychainDID(fromAdmin1.String())
+	args := []*pb.Arg{
+		pb.String(adminDid),
+	}
+	ret, err := adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "Init", nil, args...)
+	require.Nil(t, err)
+	require.True(t, ret.IsSuccess(), string(ret.Ret))
+	// set admin for method registry for other nodes
+	args = []*pb.Arg{
+		pb.String(adminDid),
+		pb.String(genUniqueRelaychainDID(fromAdmin2.String())),
+	}
+	ret, err = adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "AddAdmin", nil, args...)
+	require.Nil(t, err)
+	require.True(t, ret.IsSuccess(), string(ret.Ret))
+
+	args = []*pb.Arg{
+		pb.String(adminDid),
+		pb.String(genUniqueRelaychainDID(fromAdmin3.String())),
+	}
+	ret, err = adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "AddAdmin", nil, args...)
+	require.Nil(t, err)
+	require.True(t, ret.IsSuccess(), string(ret.Ret))
+
+	// register appchain
+	did := genUniqueAppchainDID(from.String())
+	appchainMethod := string(bitxid.DID(did).GetChainDID())
+	r, err := cli.InvokeBVMContract(
+		constant.AppchainMgrContractAddr.Address(),
+		"Register", nil, pb.String(did),
+		pb.String(appchainMethod),
+		pb.String(docAddr), pb.String(docHash),
+		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
+		String("hyperchain"), String("1.0.0"), String(pubKey),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
+
+	// vote for appchain register
 	r, err = adminCli1.InvokeBVMContract(
 		constant.GovernanceContractAddr.Address(),
 		"Vote", nil, String(proposalId), String("approve"), String("reason"),
@@ -170,9 +231,9 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 
 	// deploy rule for validation
-	deployRule(t, cli, from)
+	deployRule(t, cli, appchainMethod)
 
-	ibtp := getIBTP(t, from.String(), to.String(), 1, pb.IBTP_INTERCHAIN, proof)
+	ibtp := getIBTP(t, appchainMethod, dstAppchainMethod, 1, pb.IBTP_INTERCHAIN, proof)
 
 	tx, _ := cli.GenerateIBTPTx(ibtp)
 	tx.Extra = proof
@@ -181,7 +242,15 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }
 
-func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
+func genUniqueAppchainDID(addr string) string {
+	return fmt.Sprintf("%s%s:%s", appchainAdminDIDPrefix, addr, addr)
+}
+
+func genUniqueRelaychainDID(addr string) string {
+	return fmt.Sprintf("%s:%s", relaychainAdminDIDPrefix, addr)
+}
+
+func deployRule(t *testing.T, cli *ChainClient, method string) {
 	contract, err := ioutil.ReadFile("./testdata/simple_rule.wasm")
 	require.Nil(t, err)
 
@@ -191,10 +260,10 @@ func deployRule(t *testing.T, cli *ChainClient, from types.Address) {
 	r, err := cli.InvokeBVMContract(
 		constant.RuleManagerContractAddr.Address(),
 		"RegisterRule", nil,
-		String(from.String()),
+		String(method),
 		String(contractAddr.String()))
 	require.Nil(t, err)
-	require.Equal(t, true, r.IsSuccess())
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }
 
 func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
@@ -227,6 +296,22 @@ func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proo
 	}
 }
 
-func ibtpAccount(ibtp *pb.IBTP) string {
-	return fmt.Sprintf("%s-%s-%d", ibtp.From, ibtp.To, ibtp.Category())
+// getAdminCli returns client with admin account.
+func getAdminCli(t *testing.T, keyPath string) *ChainClient {
+	// you should put your bitxhub/scripts/build/node1/key.json to testdata/key.json.
+	k, err := asym.RestorePrivateKey(keyPath, keyPassword)
+	require.Nil(t, err)
+	var cfg = &config{
+		nodesInfo: []*NodeInfo{
+			{Addr: "localhost:60011"},
+		},
+		logger:     logrus.New(),
+		privateKey: k,
+	}
+	cli, err := New(
+		WithNodesInfo(cfg.nodesInfo...),
+		WithLogger(cfg.logger),
+		WithPrivateKey(cfg.privateKey),
+	)
+	return cli
 }
