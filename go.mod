@@ -10,7 +10,8 @@ require (
 	github.com/meshplus/bitxhub-core v0.1.0-rc1.0.20210330035001-b327cf056572
 	github.com/meshplus/bitxhub-kit v1.1.2-0.20201203072410-8a0383a6870d
 	github.com/meshplus/bitxhub-model v1.1.2-0.20210312014622-c3ad532b64ad
-	github.com/sirupsen/logrus v1.5.0
+	github.com/meshplus/bitxid v0.0.0-20210412025850-e0eaf0f9063a
+	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.0
 	github.com/tidwall/gjson v1.6.8
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
