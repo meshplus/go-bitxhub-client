@@ -44,7 +44,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	require.Nil(t, err)
 
 	go func() {
-		tx := &pb.Transaction{
+		tx := &pb.BxhTransaction{
 			From:      from,
 			To:        to,
 			Payload:   data,

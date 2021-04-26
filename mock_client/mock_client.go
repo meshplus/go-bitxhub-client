@@ -64,7 +64,7 @@ func (mr *MockClientMockRecorder) SetPrivateKey(arg0 interface{}) *gomock.Call {
 }
 
 // SendView mocks base method
-func (m *MockClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
+func (m *MockClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendView", tx)
 	ret0, _ := ret[0].(*pb.Receipt)
@@ -79,7 +79,7 @@ func (mr *MockClientMockRecorder) SendView(tx interface{}) *gomock.Call {
 }
 
 // SendTransaction mocks base method
-func (m *MockClient) SendTransaction(tx *pb.Transaction, opts *rpcx.TransactOpts) (string, error) {
+func (m *MockClient) SendTransaction(tx *pb.BxhTransaction, opts *rpcx.TransactOpts) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendTransaction", tx, opts)
 	ret0, _ := ret[0].(string)
@@ -94,7 +94,7 @@ func (mr *MockClientMockRecorder) SendTransaction(tx, opts interface{}) *gomock.
 }
 
 // SendTransactionWithReceipt mocks base method
-func (m *MockClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *rpcx.TransactOpts) (*pb.Receipt, error) {
+func (m *MockClient) SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *rpcx.TransactOpts) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendTransactionWithReceipt", tx, opts)
 	ret0, _ := ret[0].(*pb.Receipt)
@@ -302,14 +302,14 @@ func (mr *MockClientMockRecorder) DeployContract(contract, opts interface{}) *go
 }
 
 // GenerateContractTx mocks base method
-func (m *MockClient) GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+func (m *MockClient) GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.BxhTransaction, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{vmType, address, method}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GenerateContractTx", varargs...)
-	ret0, _ := ret[0].(*pb.Transaction)
+	ret0, _ := ret[0].(*pb.BxhTransaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -322,10 +322,10 @@ func (mr *MockClientMockRecorder) GenerateContractTx(vmType, address, method int
 }
 
 // GenerateIBTPTx mocks base method
-func (m *MockClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
+func (m *MockClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.BxhTransaction, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateIBTPTx", ibtp)
-	ret0, _ := ret[0].(*pb.Transaction)
+	ret0, _ := ret[0].(*pb.BxhTransaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

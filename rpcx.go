@@ -10,8 +10,6 @@ import (
 	"github.com/Rican7/retry"
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
-	"github.com/looplab/fsm"
-	appchainmgr "github.com/meshplus/bitxhub-core/appchain-mgr"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
 	"google.golang.org/grpc/codes"
@@ -27,19 +25,6 @@ const (
 	GetTPSTimeout            = 2 * time.Second
 	CheckPierTimeout         = 60 * time.Second
 )
-
-type Appchain struct {
-	ID            string                     `json:"id"`
-	Name          string                     `json:"name"`
-	Validators    string                     `json:"validators"`
-	ConsensusType string                     `json:"consensus_type"`
-	Status        appchainmgr.AppchainStatus `json:"status"`
-	ChainType     string                     `json:"chain_type"`
-	Desc          string                     `json:"desc"`
-	Version       string                     `json:"version"`
-	PublicKey     string                     `json:"public_key"`
-	FSM           *fsm.FSM                   `json:"fsm"`
-}
 
 type Interchain struct {
 	ID                   string            `json:"id"`
@@ -105,15 +90,15 @@ func (cli *ChainClient) Stop() error {
 	return cli.pool.Close()
 }
 
-func (cli *ChainClient) SendView(tx *pb.Transaction) (*pb.Receipt, error) {
+func (cli *ChainClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	return cli.sendView(tx)
 }
 
-func (cli *ChainClient) SendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+func (cli *ChainClient) SendTransaction(tx *pb.BxhTransaction, opts *TransactOpts) (string, error) {
 	return cli.sendTransaction(tx, opts)
 }
 
-func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error) {
 	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
@@ -179,7 +164,7 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	return response, nil
 }
 
-func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error) {
 	hash, err := cli.sendTransaction(tx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("send tx error: %w", err)
@@ -192,7 +177,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 	return receipt, nil
 }
 
-func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpts) (string, error) {
 	if tx.From == nil {
 		return "", fmt.Errorf("%w: from address can't be empty", ErrReconstruct)
 	}
@@ -240,7 +225,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 	return msg.TxHash, err
 }
 
-func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
+func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
