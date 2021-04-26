@@ -110,7 +110,6 @@ func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
 		From:      from,
 		To:        constant.InterchainContractAddr.Address(),
 		IBTP:      ibtp,
-		Nonce:     ibtp.Index,
 		Timestamp: time.Now().UnixNano(),
 	}
 
