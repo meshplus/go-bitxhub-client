@@ -24,14 +24,14 @@ type Client interface {
 
 	//Send a readonly transaction to BitXHub. If the transaction is writable,
 	// this transaction will not be executed and error wil be returned.
-	SendView(tx *pb.Transaction) (*pb.Receipt, error)
+	SendView(tx *pb.BxhTransaction) (*pb.Receipt, error)
 
 	//Send a signed transaction to BitXHub. If the signature is illegal,
 	//the transaction hash will be obtained but the transaction receipt is illegal.
-	SendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error)
+	SendTransaction(tx *pb.BxhTransaction, opts *TransactOpts) (string, error)
 
 	//Send transaction to BitXHub and get the receipt.
-	SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error)
+	SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error)
 
 	//Get the receipt by transaction hash,
 	//the status of the receipt is a sign of whether the transaction is successful.
@@ -76,10 +76,10 @@ type Client interface {
 	DeployContract(contract []byte, opts *TransactOpts) (contractAddr *types.Address, err error)
 
 	//GenerateContractTx generates signed transaction to invoke contract
-	GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error)
+	GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.BxhTransaction, error)
 
 	// GenerateIBTPTx generates interchain tx with ibtp specified
-	GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error)
+	GenerateIBTPTx(ibtp *pb.IBTP) (*pb.BxhTransaction, error)
 
 	//Call the contract according to the contract type, contract address,
 	//contract method, and contract method parameters

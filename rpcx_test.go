@@ -58,7 +58,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 
 	payload, err := data.Marshal()
 	require.Nil(t, err)
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        to,
 		Payload:   payload,
@@ -170,7 +170,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	payload, err := data.Marshal()
 	require.Nil(t, err)
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        to,
 		Payload:   payload,
@@ -263,7 +263,7 @@ func TestChainClient_GetTPS(t *testing.T) {
 
 func genContractTransaction(
 	vmType pb.TransactionData_VMType, privateKey crypto.PrivateKey,
-	address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+	address *types.Address, method string, args ...*pb.Arg) (*pb.BxhTransaction, error) {
 	from, err := privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err
@@ -290,7 +290,7 @@ func genContractTransaction(
 		return nil, err
 	}
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        address,
 		Payload:   payload,

@@ -121,7 +121,7 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey
 	payload, err := data.Marshal()
 	require.Nil(t, err)
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        to,
 		Payload:   payload,
@@ -259,7 +259,7 @@ func deployRule(t *testing.T, cli *ChainClient, method string) {
 
 	r, err := cli.InvokeBVMContract(
 		constant.RuleManagerContractAddr.Address(),
-		"RegisterRule", nil,
+		"BindRule", nil,
 		String(method),
 		String(contractAddr.String()))
 	require.Nil(t, err)

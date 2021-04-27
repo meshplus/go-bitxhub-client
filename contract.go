@@ -31,7 +31,7 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 		return nil, err
 	}
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        &types.Address{},
 		Payload:   payload,
@@ -80,7 +80,7 @@ func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address
 		return nil, err
 	}
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        address,
 		Payload:   payload,
@@ -97,7 +97,7 @@ func (cli *ChainClient) InvokeXVMContract(address *types.Address, method string,
 	return cli.InvokeContract(pb.TransactionData_XVM, address, method, opts, args...)
 }
 
-func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
+func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.BxhTransaction, error) {
 	if ibtp == nil {
 		return nil, fmt.Errorf("empty ibtp not allowed")
 	}
@@ -106,7 +106,7 @@ func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
 		return nil, err
 	}
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        constant.InterchainContractAddr.Address(),
 		IBTP:      ibtp,
@@ -116,7 +116,7 @@ func (cli *ChainClient) GenerateIBTPTx(ibtp *pb.IBTP) (*pb.Transaction, error) {
 	return tx, nil
 }
 
-func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.Transaction, error) {
+func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, address *types.Address, method string, args ...*pb.Arg) (*pb.BxhTransaction, error) {
 	from, err := cli.privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (cli *ChainClient) GenerateContractTx(vmType pb.TransactionData_VMType, add
 		return nil, err
 	}
 
-	tx := &pb.Transaction{
+	tx := &pb.BxhTransaction{
 		From:      from,
 		To:        address,
 		Payload:   payload,
