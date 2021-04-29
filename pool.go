@@ -85,7 +85,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			cli.conn = conn
 			cli.broker = pb.NewChainBrokerClient(conn)
 			pool.currentConn = cli
-			pool.logger.Infof("Establish connection with bitxhub %s successfully", cli.nodeInfo.Addr)
+			pool.logger.Debugf("Establish connection with bitxhub %s successfully", cli.nodeInfo.Addr)
 			return nil
 		}
 
