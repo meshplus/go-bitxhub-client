@@ -115,7 +115,7 @@ func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, 
 
 func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey crypto.PrivateKey) {
 	data := &pb.TransactionData{
-		Amount: 10,
+		Amount: "10",
 	}
 
 	payload, err := data.Marshal()
@@ -193,7 +193,7 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	require.Nil(t, err)
 	require.True(t, ret.IsSuccess(), string(ret.Ret))
 
-	// register appchain
+	// register src appchain
 	did := genUniqueAppchainDID(from.String())
 	appchainMethod := string(bitxid.DID(did).GetChainDID())
 	r, err := cli.InvokeBVMContract(
@@ -209,7 +209,41 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
 
 	// vote for appchain register
-	r, err = adminCli1.InvokeBVMContract(
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
+
+	// register dst appchain
+	r, err = cli.InvokeBVMContract(
+		constant.AppchainMgrContractAddr.Address(),
+		"Register", nil, pb.String(did),
+		pb.String(dstAppchainMethod),
+		pb.String(docAddr), pb.String(docHash),
+		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
+		String("hyperchain"), String("1.0.0"), String(pubKey),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	proposalId = gjson.Get(string(r.Ret), "proposal_id").String()
+
+	// vote for appchain register
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
+
+	// deploy rule for validation
+	proposalId = deployRule(t, cli, appchainMethod)
+
+	// vote for rule register
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
+
+	ibtp := getIBTP(t, appchainMethod, dstAppchainMethod, 1, pb.IBTP_INTERCHAIN, proof)
+
+	tx, _ := cli.GenerateIBTPTx(ibtp)
+	tx.Extra = proof
+	r, err = cli.SendTransactionWithReceipt(tx, nil)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+}
+
+func vote(t *testing.T, adminCli1 *ChainClient, adminCli2 *ChainClient, adminCli3 *ChainClient, proposalId string) {
+	r, err := adminCli1.InvokeBVMContract(
 		constant.GovernanceContractAddr.Address(),
 		"Vote", nil, String(proposalId), String("approve"), String("reason"),
 	)
@@ -229,17 +263,6 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from, to types.Address) {
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
-
-	// deploy rule for validation
-	deployRule(t, cli, appchainMethod)
-
-	ibtp := getIBTP(t, appchainMethod, dstAppchainMethod, 1, pb.IBTP_INTERCHAIN, proof)
-
-	tx, _ := cli.GenerateIBTPTx(ibtp)
-	tx.Extra = proof
-	r, err = cli.SendTransactionWithReceipt(tx, nil)
-	require.Nil(t, err)
-	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }
 
 func genUniqueAppchainDID(addr string) string {
@@ -250,20 +273,20 @@ func genUniqueRelaychainDID(addr string) string {
 	return fmt.Sprintf("%s:%s", relaychainAdminDIDPrefix, addr)
 }
 
-func deployRule(t *testing.T, cli *ChainClient, method string) {
+func deployRule(t *testing.T, cli *ChainClient, method string) string {
 	contract, err := ioutil.ReadFile("./testdata/simple_rule.wasm")
 	require.Nil(t, err)
 
 	contractAddr, err := cli.DeployContract(contract, nil)
 	require.Nil(t, err)
 
-	r, err := cli.InvokeBVMContract(
-		constant.RuleManagerContractAddr.Address(),
-		"BindRule", nil,
-		String(method),
-		String(contractAddr.String()))
+	// register rule
+	ret, err := cli.InvokeBVMContract(constant.RuleManagerContractAddr.Address(),
+		"RegisterRule", nil, pb.String(method), pb.String(contractAddr.String()))
 	require.Nil(t, err)
-	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	require.True(t, ret.IsSuccess())
+
+	return gjson.Get(string(ret.Ret), "proposal_id").String()
 }
 
 func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {

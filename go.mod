@@ -4,11 +4,12 @@ go 1.13
 
 require (
 	github.com/Rican7/retry v0.1.0
+	github.com/ethereum/go-ethereum v1.10.2 // indirect
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/meshplus/bitxhub-kit v1.2.0
-	github.com/meshplus/bitxhub-model v1.2.0
+	github.com/meshplus/bitxhub-kit v1.2.1-0.20210524063043-9afae78ac098
+	github.com/meshplus/bitxhub-model v1.2.1-0.20210604034838-b7e8a66d25a2
 	github.com/meshplus/bitxid v0.0.0-20210412025850-e0eaf0f9063a
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0

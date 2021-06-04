@@ -53,7 +53,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	require.Nil(t, err)
 
 	data := &pb.TransactionData{
-		Amount: 10,
+		Amount: "10",
 	}
 
 	payload, err := data.Marshal()
@@ -164,7 +164,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	require.Nil(t, err)
 
 	data := &pb.TransactionData{
-		Amount: 10,
+		Amount: "10",
 	}
 
 	payload, err := data.Marshal()
