@@ -261,6 +261,19 @@ func TestChainClient_GetTPS(t *testing.T) {
 	require.True(t, res > 0)
 }
 
+func TestNew(t *testing.T) {
+	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	require.Nil(t, err)
+	cli, err := New(
+		WithNodesInfo(cfg.nodesInfo...),
+		WithLogger(cfg.logger),
+		WithPrivateKey(privKey),
+		WithReceiptTimeInterval(200*time.Millisecond),
+	)
+	require.Nil(t, err)
+	require.Equal(t, 200*time.Millisecond, cli.receiptTimeInterval)
+}
+
 func genContractTransaction(
 	vmType pb.TransactionData_VMType, privateKey crypto.PrivateKey,
 	address *types.Address, method string, args ...*pb.Arg) (*pb.BxhTransaction, error) {

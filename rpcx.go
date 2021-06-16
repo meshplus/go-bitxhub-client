@@ -36,12 +36,13 @@ type Interchain struct {
 var _ Client = (*ChainClient)(nil)
 
 type ChainClient struct {
-	privateKey  crypto.PrivateKey
-	logger      Logger
-	pool        *ConnectionPool
-	ipfsClient  *IPFSClient
-	normalSeqNo int64
-	ibtpSeqNo   int64
+	privateKey          crypto.PrivateKey
+	logger              Logger
+	pool                *ConnectionPool
+	ipfsClient          *IPFSClient
+	normalSeqNo         int64
+	ibtpSeqNo           int64
+	receiptTimeInterval time.Duration
 }
 
 func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) {
@@ -79,10 +80,11 @@ func New(opts ...Option) (*ChainClient, error) {
 	}
 
 	return &ChainClient{
-		privateKey: cfg.privateKey,
-		logger:     cfg.logger,
-		pool:       pool,
-		ipfsClient: ipfsClient,
+		privateKey:          cfg.privateKey,
+		logger:              cfg.logger,
+		pool:                pool,
+		ipfsClient:          ipfsClient,
+		receiptTimeInterval: cfg.receiptTimeInterval,
 	}, nil
 }
 
@@ -116,7 +118,7 @@ func (cli *ChainClient) GetReceipt(hash string) (*pb.Receipt, error) {
 		return nil
 	},
 		strategy.Limit(5),
-		strategy.Backoff(backoff.Fibonacci(500*time.Millisecond)),
+		strategy.Backoff(backoff.Fibonacci(cli.receiptTimeInterval)),
 	)
 
 	if err != nil {

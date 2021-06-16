@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	blockChanNumber = 1024
-	defaultTimeout  = 1 * time.Second
+	blockChanNumber            = 1024
+	defaultTimeout             = 1 * time.Second
+	defaultReceiptTimeInterval = 500 * time.Millisecond
 )
 
 type config struct {
-	logger       Logger
-	privateKey   crypto.PrivateKey
-	nodesInfo    []*NodeInfo
-	ipfsAddrs    []string
-	timeoutLimit time.Duration // timeout limit config for dialing grpc
+	logger              Logger
+	privateKey          crypto.PrivateKey
+	nodesInfo           []*NodeInfo
+	ipfsAddrs           []string
+	timeoutLimit        time.Duration // timeout limit config for dialing grpc
+	receiptTimeInterval time.Duration
 }
 
 type NodeInfo struct {
@@ -61,6 +63,12 @@ func WithTimeoutLimit(limit time.Duration) Option {
 	}
 }
 
+func WithReceiptTimeInterval(limit time.Duration) Option {
+	return func(config *config) {
+		config.receiptTimeInterval = limit
+	}
+}
+
 func generateConfig(opts ...Option) (*config, error) {
 	config := &config{}
 	for _, opt := range opts {
@@ -89,6 +97,10 @@ func checkConfig(config *config) error {
 
 	if config.timeoutLimit == 0 {
 		config.timeoutLimit = defaultTimeout
+	}
+
+	if config.receiptTimeInterval == 0 {
+		config.receiptTimeInterval = defaultReceiptTimeInterval
 	}
 
 	// if EnableTLS is set, then tls certs must be provided
