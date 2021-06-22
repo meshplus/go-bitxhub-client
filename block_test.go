@@ -1,6 +1,7 @@
 package rpcx
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -52,6 +53,23 @@ func Cli() (*ChainClient, error) {
 
 func Cli1() (*ChainClient, error) {
 	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	cli, err := New(
+		WithNodesInfo(cfg1.nodesInfo...),
+		WithLogger(cfg1.logger),
+		WithPrivateKey(privKey),
+		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
+		WithTimeoutLimit(500*time.Millisecond),
+	)
+	return cli, err
+}
+
+func Cli2() (*ChainClient, error) {
+	KeyPath := filepath.Join("./testdata/node2/key.json")
+	privKey, err := asym.RestorePrivateKey(KeyPath, "bitxhub")
 	if err != nil {
 		return nil, err
 	}

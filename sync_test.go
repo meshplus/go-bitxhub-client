@@ -115,7 +115,7 @@ func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, 
 
 func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey crypto.PrivateKey) {
 	data := &pb.TransactionData{
-		Amount: "10",
+		Amount: 10,
 	}
 
 	payload, err := data.Marshal()

@@ -1,6 +1,7 @@
 package rpcx
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -47,4 +48,30 @@ func TestChainClient_InvokeBVMContract(t *testing.T) {
 	res, err := cli.InvokeBVMContract(constant.StoreContractAddr.Address(), "Get", nil, String("a"))
 	require.Nil(t, err)
 	require.Equal(t, string(res.Ret), "10")
+}
+
+func TestSetInterchainSwap_InvokeBVMContract(t *testing.T) {
+	cli, err := Cli2()
+	require.Nil(t, err)
+	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetInterchainSwapAddr",
+		nil, String("0xc58c24Af11eEF57975b9d07429F202C3CCca5bBD"))
+	require.Nil(t, err)
+	fmt.Println(result)
+}
+func TestSetEscrow_InvokeBVMContract(t *testing.T) {
+	cli, err := Cli2()
+	require.Nil(t, err)
+	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetEscrowAddr",
+		nil, String("0xa670a4891490a732BF17B5f8022B51c989c5E5ab"))
+	require.Nil(t, err)
+	fmt.Println(result)
+}
+
+func TestGetEscrow_InvokeBVMContract(t *testing.T) {
+	cli, err := Cli2()
+	require.Nil(t, err)
+	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "GetEscrowAddr",
+		nil)
+	require.Nil(t, err)
+	fmt.Println(string(result.Ret))
 }

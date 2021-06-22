@@ -38,7 +38,7 @@ func TestChainClient_Subscribe(t *testing.T) {
 	require.Nil(t, err)
 
 	td := &pb.TransactionData{
-		Amount: "10",
+		Amount: 10,
 	}
 	data, err := td.Marshal()
 	require.Nil(t, err)
