@@ -46,7 +46,7 @@ jobs:
           cd bitxhub && git checkout master
           make prepare
           cd scripts && nohup bash solo.sh &
-          sleep 60
+          sleep 180
 
       - name: Run Unit tests
         run: |

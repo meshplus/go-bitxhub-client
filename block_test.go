@@ -1,6 +1,7 @@
 package rpcx
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -35,7 +36,7 @@ func TestChainClient_GetBlocks(t *testing.T) {
 }
 
 func Cli() (*ChainClient, error) {
-	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	privKey, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), "bitxhub")
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package rpcx
 import (
 	"fmt"
 	"math/rand"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -82,7 +83,7 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 }
 
 func TestChainClient_SendView(t *testing.T) {
-	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	privKey, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), "bitxhub")
 	require.Nil(t, err)
 
 	cli, err := New(
@@ -109,7 +110,7 @@ func TestChainClient_SendView(t *testing.T) {
 	// bitxhub will execute this tx, but its result will not be persisted in storage
 	receipt, err := cli.sendView(tx)
 	require.Nil(t, err)
-	require.Equal(t, pb.Receipt_SUCCESS, receipt.Status)
+	require.Equal(t, pb.Receipt_SUCCESS, receipt.Status, string(receipt.Ret))
 
 	queryKey, err := genContractTransaction(pb.TransactionData_BVM, privKey,
 		types.NewAddressByStr(BoltContractAddress), "Get", pb.String(string(randKey)))
@@ -128,6 +129,7 @@ func TestChainClient_SendView(t *testing.T) {
 	ret, err := cli.GetReceipt(hash)
 	require.Nil(t, err)
 	require.Equal(t, hash, ret.TxHash.String())
+	require.Equal(t, pb.Receipt_SUCCESS, ret.Status, string(ret.Ret))
 
 	// test sending read-ledger tx to SendView api
 	view, err := genContractTransaction(pb.TransactionData_BVM, privKey,
@@ -182,7 +184,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 
 	receipt, err := cli.SendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
-	require.True(t, strings.Contains(string(receipt.GetRet()), "not sufficient funds"))
+	require.True(t, strings.Contains(string(receipt.GetRet()), "insufficeient balance"), string(receipt.GetRet()))
 
 	txx, err := cli.GetTransaction(receipt.TxHash.String())
 	require.Nil(t, err)
@@ -249,6 +251,8 @@ func TestChainClient_GetTPS(t *testing.T) {
 
 		_, err = cli.sendTransaction(tx, nil)
 		require.Nil(t, err)
+
+		time.Sleep(time.Second)
 	}
 
 	time.Sleep(time.Second)

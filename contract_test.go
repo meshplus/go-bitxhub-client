@@ -20,22 +20,21 @@ func TestChainClient_DeployXVMContract(t *testing.T) {
 	require.Nil(t, err)
 }
 
-// TODO: Waiting for the PR from XLW
-//func TestChainClient_InvokeXVMContract(t *testing.T) {
-//	cli, err := Cli()
-//	require.Nil(t, err)
-//
-//	contract, err := ioutil.ReadFile("./testdata/example.wasm")
-//	require.Nil(t, err)
-//
-//	addr, err := cli.DeployContract(contract, nil)
-//	require.Nil(t, err)
-//
-//	result, err := cli.InvokeXVMContract(addr, "a", nil, Int32(1), Int32(2))
-//	require.Nil(t, err)
-//	require.True(t, CheckReceipt(result))
-//	require.Equal(t, "336", string(result.Ret))
-//}
+func TestChainClient_InvokeXVMContract(t *testing.T) {
+	cli, err := Cli()
+	require.Nil(t, err)
+
+	contract, err := ioutil.ReadFile("./testdata/example.wasm")
+	require.Nil(t, err)
+
+	addr, err := cli.DeployContract(contract, nil)
+	require.Nil(t, err)
+
+	result, err := cli.InvokeXVMContract(addr, "a", nil, Int32(1), Int32(2))
+	require.Nil(t, err)
+	require.True(t, CheckReceipt(result))
+	require.Equal(t, "336", string(result.Ret))
+}
 
 func TestChainClient_InvokeBVMContract(t *testing.T) {
 	cli, err := Cli()
