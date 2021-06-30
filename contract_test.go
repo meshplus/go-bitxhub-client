@@ -62,7 +62,7 @@ func TestSetEscrow_InvokeBVMContract(t *testing.T) {
 	cli, err := Cli2()
 	require.Nil(t, err)
 	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetEscrowAddr",
-		nil, String("0xa670a4891490a732BF17B5f8022B51c989c5E5ab"))
+		nil, String("0xb9421505cD165E8112c3FCc1d0692f784F332E9F"))
 	require.Nil(t, err)
 	fmt.Println(result)
 }
