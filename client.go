@@ -101,9 +101,6 @@ type Client interface {
 	// and it should be the nonce for next transaction
 	GetPendingNonceByAccount(account string) (uint64, error)
 
-	// Delete node according to its pid
-	DelVPNode(pid string) (*pb.Response, error)
-
 	// IPFSPutFromLocal puts local file to ipfs network
 	IPFSPutFromLocal(localfPath string) (*pb.Response, error)
 
