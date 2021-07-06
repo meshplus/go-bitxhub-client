@@ -111,6 +111,10 @@ func (cli *ChainClient) SendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 	return cli.sendTransaction(tx, opts)
 }
 
+func (cli *ChainClient) SendTransactionSync(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	return cli.sendTransactionSync(tx, opts)
+}
+
 func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
 	return cli.sendTransactionWithReceipt(tx, opts)
 }
@@ -190,13 +194,41 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.Transaction, opts *Tra
 	return receipt, nil
 }
 
-func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+func (cli *ChainClient) prepareTx(tx *pb.Transaction, opts *TransactOpts) (*pb.Transaction, error) {
 	if tx.From == nil {
-		return "", fmt.Errorf("from address can't be empty")
+		return nil, fmt.Errorf("from address can't be empty")
 	}
 	if opts == nil {
 		opts = new(TransactOpts)
 		opts.From = tx.From.String() // set default from for opts
+	}
+
+	var (
+		nonce uint64
+		err   error
+	)
+	if opts.Nonce == 0 {
+		// no nonce set for tx, then use latest nonce from bitxhub
+		nonce, err = cli.GetPendingNonceByAccount(opts.From)
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve account nonce: %w", err)
+		}
+	} else {
+		nonce = opts.Nonce
+	}
+	tx.Nonce = nonce
+
+	if err := tx.Sign(cli.privateKey); err != nil {
+		return nil, fmt.Errorf("tx sign: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) (string, error) {
+	tx, err := cli.prepareTx(tx, opts)
+	if err != nil {
+		return "", err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
@@ -206,28 +238,29 @@ func (cli *ChainClient) sendTransaction(tx *pb.Transaction, opts *TransactOpts) 
 		return "", err
 	}
 
-	var nonce uint64
-	if opts.Nonce == 0 {
-		// no nonce set for tx, then use latest nonce from bitxhub
-		nonce, err = cli.GetPendingNonceByAccount(opts.From)
-		if err != nil {
-			return "", fmt.Errorf("failed to retrieve account nonce: %w", err)
-		}
-	} else {
-		nonce = opts.Nonce
-	}
-	tx.Nonce = nonce
-
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return "", fmt.Errorf("tx sign: %w", err)
-	}
-
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
 		return "", fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
 	return msg.TxHash, err
+}
+
+func (cli *ChainClient) sendTransactionSync(tx *pb.Transaction, opts *TransactOpts) (*pb.Receipt, error) {
+	tx, err := cli.prepareTx(tx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return grpcClient.broker.SendTransactionSync(ctx, tx)
 }
 
 func (cli *ChainClient) sendView(tx *pb.Transaction) (*pb.Receipt, error) {
