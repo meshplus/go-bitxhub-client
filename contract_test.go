@@ -54,15 +54,24 @@ func TestSetInterchainSwap_InvokeBVMContract(t *testing.T) {
 	cli, err := Cli2()
 	require.Nil(t, err)
 	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetInterchainSwapAddr",
-		nil, String("0xc58c24Af11eEF57975b9d07429F202C3CCca5bBD"))
+		nil, String("0x4C5DAABF26C2299183dD3281Ef24a640890E3BdF"))
 	require.Nil(t, err)
 	fmt.Println(result)
 }
+func TestSetProxy_InvokeBVMContract(t *testing.T) {
+	cli, err := Cli2()
+	require.Nil(t, err)
+	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetProxyAddr",
+		nil, String("0x2EE82c6830dFd73315aB1Fecad20972aDB8dfD4d"))
+	require.Nil(t, err)
+	fmt.Println(result)
+}
+
 func TestSetEscrow_InvokeBVMContract(t *testing.T) {
 	cli, err := Cli2()
 	require.Nil(t, err)
 	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetEscrowAddr",
-		nil, String("0xb9421505cD165E8112c3FCc1d0692f784F332E9F"))
+		nil, String("0x56CcF2466a27E4D231824b823e04cD672E52002B"), String("0xdB3590b783A569BaB7ffa6E292BfDf856F9890aE"))
 	require.Nil(t, err)
 	fmt.Println(result)
 }
@@ -71,7 +80,7 @@ func TestGetEscrow_InvokeBVMContract(t *testing.T) {
 	cli, err := Cli2()
 	require.Nil(t, err)
 	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "GetEscrowAddr",
-		nil)
+		nil, String(""))
 	require.Nil(t, err)
 	fmt.Println(string(result.Ret))
 }
