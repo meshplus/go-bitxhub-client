@@ -1,6 +1,7 @@
 package rpcx
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -46,4 +47,13 @@ func TestChainClient_InvokeBVMContract(t *testing.T) {
 	res, err := cli.InvokeBVMContract(constant.StoreContractAddr.Address(), "Get", nil, String("a"))
 	require.Nil(t, err)
 	require.Equal(t, string(res.Ret), "10")
+}
+
+func TestSetProxy_InvokeBVMContract(t *testing.T) {
+	cli, err := Cli2()
+	require.Nil(t, err)
+	result, err := cli.InvokeBVMContract(constant.EthHeaderMgrContractAddr.Address(), "SetEscrowAddr",
+		nil, String("0x2EE82c6830dFd73315aB1Fecad20972aDB8dfD4d"))
+	require.Nil(t, err)
+	fmt.Println(result)
 }

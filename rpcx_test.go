@@ -25,7 +25,7 @@ var (
 	}
 	cfg1 = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60012"},
+			{Addr: "localhost:60012", EnableTLS: true, CertPath: "certs/ca.pem", AccessCertPath: "certs/access.cert", CommonName: "localhost"},
 		},
 		logger: logrus.New(),
 	}
@@ -192,7 +192,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 }
 
 func TestChainClient_GetChainMeta(t *testing.T) {
-	cli, err := Cli()
+	cli, err := Cli2()
 	require.Nil(t, err)
 
 	chainMeta, err := cli.GetChainMeta()

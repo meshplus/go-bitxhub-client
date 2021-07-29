@@ -1,7 +1,10 @@
 package rpcx
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"time"
 
@@ -24,6 +27,24 @@ type ConnectionPool struct {
 	currentConn  *grpcClient
 	connections  []*grpcClient
 	logger       Logger
+}
+
+// ClientAccess
+type ClientAccess struct {
+	EnableTLS   bool
+	SubCertData string
+}
+
+// GetRequestMetadata gets the request metadata as a map from a TokenSource.
+func (ca ClientAccess) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{
+		"access": ca.SubCertData,
+	}, nil
+}
+
+// RequireTransportSecurity indicates whether the credentials requires transport security.
+func (ca ClientAccess) RequireTransportSecurity() bool {
+	return ca.EnableTLS
 }
 
 // init a connection
@@ -74,6 +95,12 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 					return fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
 				}
 				opts = append(opts, grpc.WithTransportCredentials(creds))
+				caCertData, err := ioutil.ReadFile(cli.nodeInfo.AccessCertPath)
+				if err != nil {
+					return fmt.Errorf("%w: access config is not right", err)
+				}
+				caCertDataString := base64.StdEncoding.EncodeToString(caCertData)
+				opts = append(opts, grpc.WithPerRPCCredentials(ClientAccess{EnableTLS: cli.nodeInfo.EnableTLS, SubCertData: caCertDataString}))
 			} else {
 				opts = append(opts, grpc.WithInsecure())
 			}
