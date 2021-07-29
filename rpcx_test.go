@@ -25,7 +25,7 @@ var (
 	}
 	cfg1 = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60012"},
+			{Addr: "localhost:60012", EnableTLS: true, CertPath: "ca.pem", AccessCertPath: "pier.cert"},
 		},
 		logger: logrus.New(),
 	}
