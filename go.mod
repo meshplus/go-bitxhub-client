@@ -6,12 +6,11 @@ require (
 	github.com/Rican7/retry v0.1.0
 	github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7 // indirect
 	github.com/golang/mock v1.4.3
-	github.com/golang/snappy v0.0.3-0.20201103224600-674baa8c7fc3 // indirect
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20210616114532-4849447f09e1
-	github.com/meshplus/bitxhub-model v1.2.1-0.20210629020432-d98febd566c1
-	github.com/meshplus/bitxid v0.0.0-20210412025850-e0eaf0f9063a
+	github.com/meshplus/bitxhub-model v1.2.1-0.20210811073359-62d4143881d5
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.6.8

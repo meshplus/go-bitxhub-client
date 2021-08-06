@@ -336,7 +336,8 @@ func getAdminCli(t *testing.T, keyPath string) *ChainClient {
 	require.Nil(t, err)
 	var cfg = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60011"},
+			{Addr: "localhost:60011", EnableTLS: true, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
+				AccessCert: "testdata/node1/certs/gateway.cert", AccessKey: "testdata/node1/certs/gateway.priv"},
 		},
 		logger:     logrus.New(),
 		privateKey: k,
