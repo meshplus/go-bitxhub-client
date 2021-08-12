@@ -301,11 +301,9 @@ func deployRule(t *testing.T, cli *ChainClient, appchainID string) string {
 
 func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
 	content := &pb.Content{
-		SrcContractId: "mychannel&transfer",
-		DstContractId: "mychannel&transfer",
-		Func:          "interchainCharge",
-		Args:          [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
-		Callback:      "interchainConfirm",
+		Func:     "interchainCharge",
+		Args:     [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
+		Callback: "interchainConfirm",
 	}
 
 	bytes, _ := content.Marshal()
@@ -319,13 +317,13 @@ func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proo
 	proofHash := sha256.Sum256(proof)
 
 	return &pb.IBTP{
-		From:      from,
-		To:        to,
-		Payload:   ibtppd,
-		Index:     index,
-		Type:      typ,
-		Timestamp: time.Now().UnixNano(),
-		Proof:     proofHash[:],
+		From:          from,
+		To:            to,
+		Payload:       ibtppd,
+		Index:         index,
+		Type:          typ,
+		TimeoutHeight: 10,
+		Proof:         proofHash[:],
 	}
 }
 
