@@ -1,7 +1,10 @@
 package rpcx
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"time"
 
@@ -68,7 +71,18 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
 			// if EnableTLS is set, then setup connection with ca cert
 			if cli.nodeInfo.EnableTLS {
-				creds, err := credentials.NewClientTLSFromFile(cli.nodeInfo.CertPath, cli.nodeInfo.CommonName)
+				certPathByte, err := ioutil.ReadFile(cli.nodeInfo.CertPath)
+				if err != nil {
+					return err
+				}
+				cp := x509.NewCertPool()
+				if !cp.AppendCertsFromPEM(certPathByte) {
+					return fmt.Errorf("credentials: failed to append certificates")
+				}
+				cert, err := tls.LoadX509KeyPair(cli.nodeInfo.AccessCert, cli.nodeInfo.AccessKey)
+				creds := credentials.NewTLS(&tls.Config{
+					Certificates: []tls.Certificate{cert}, ServerName: cli.nodeInfo.CommonName, RootCAs: cp})
+
 				if err != nil {
 					pool.logger.Debugf("Creat tls credentials from %s for client %s", cli.nodeInfo.CertPath, cli.nodeInfo.Addr)
 					return fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)

@@ -27,6 +27,8 @@ type NodeInfo struct {
 	EnableTLS  bool
 	CertPath   string
 	CommonName string
+	AccessCert string
+	AccessKey  string
 }
 
 type Option func(*config)
@@ -96,6 +98,12 @@ func checkConfig(config *config) error {
 		if nodeInfo.EnableTLS {
 			if !fileutil.Exist(nodeInfo.CertPath) {
 				return fmt.Errorf("ca cert file %s is not found while tls is enabled", nodeInfo.CertPath)
+			}
+			if !fileutil.Exist(nodeInfo.AccessCert) {
+				return fmt.Errorf("access cert file %s is not found while tls is enabled", nodeInfo.AccessCert)
+			}
+			if !fileutil.Exist(nodeInfo.AccessKey) {
+				return fmt.Errorf("access key file %s is not found while tls is enabled", nodeInfo.AccessKey)
 			}
 		}
 	}
