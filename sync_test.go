@@ -56,12 +56,44 @@ func TestChainClient_GetBlockHeader(t *testing.T) {
 }
 
 func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
-	cli, _, from, _ := prepareKeypair(t)
+	cli, _, addr, _ := prepareKeypair(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sendInterchaintx(t, cli, *from)
+	privKey0, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	require.Nil(t, err)
+
+	from, err := privKey0.PublicKey().Address()
+	require.Nil(t, err)
+
+	cli0, err := New(
+		WithNodesInfo(cfg.nodesInfo...),
+		WithLogger(cfg.logger),
+		WithPrivateKey(privKey0),
+	)
+	require.Nil(t, err)
+
+	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
+	require.Nil(t, err)
+
+	to, err := privKey1.PublicKey().Address()
+	require.Nil(t, err)
+
+	cli1, err := New(
+		WithNodesInfo(cfg.nodesInfo...),
+		WithLogger(cfg.logger),
+		WithPrivateKey(privKey1),
+	)
+	require.Nil(t, err)
+
+	nonce, err := cli.GetPendingNonceByAccount(addr.String())
+	require.Nil(t, err)
+
+	transfer(t, cli, from, 1000000000000000, &TransactOpts{Nonce: nonce})
+	transfer(t, cli, to, 1000000000000000, &TransactOpts{Nonce: nonce + 1})
+
+	sendInterchaintx(t, cli0, cli1)
 
 	meta, err := cli.GetChainMeta()
 	require.Nil(t, err)
@@ -130,16 +162,12 @@ func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey
 	require.EqualValues(t, 66, len(hash))
 }
 
-func sendInterchaintx(t *testing.T, cli *ChainClient, from types.Address) {
+func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	validators, err := ioutil.ReadFile("./testdata/single_validator")
 	require.Nil(t, err)
 
 	proof, err := ioutil.ReadFile("./testdata/proof_1.0.0_rc")
 	require.Nil(t, err)
-
-	rawPubKey, err := cli.privateKey.PublicKey().Bytes()
-	require.Nil(t, err)
-	pubKey := base64.StdEncoding.EncodeToString(rawPubKey)
 
 	// regiter approve
 	// you should put your bitxhub/scripts/build/node1/key.json to testdata/node1/key.json.
@@ -150,83 +178,45 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from types.Address) {
 	adminCli2 := getAdminCli(t, adminKey2)
 	adminCli3 := getAdminCli(t, adminKey3)
 
-	priAdmin1, err := asym.RestorePrivateKey(adminKey1, "bitxhub")
+	srcRawPubKey, err := cli0.privateKey.PublicKey().Bytes()
 	require.Nil(t, err)
-	fromAdmin1, err := priAdmin1.PublicKey().Address()
+	srcPubKey := base64.StdEncoding.EncodeToString(srcRawPubKey)
+	from, err := cli0.privateKey.PublicKey().Address()
+
+	dstRawPubKey, err := cli1.privateKey.PublicKey().Bytes()
 	require.Nil(t, err)
 
-	require.Nil(t, err)
-	priAdmin2, err := asym.RestorePrivateKey(adminKey2, "bitxhub")
-	require.Nil(t, err)
-	fromAdmin2, err := priAdmin2.PublicKey().Address()
-	require.Nil(t, err)
-	priAdmin3, err := asym.RestorePrivateKey(adminKey3, "bitxhub")
-	require.Nil(t, err)
-	fromAdmin3, err := priAdmin3.PublicKey().Address()
+	dstPubKey := base64.StdEncoding.EncodeToString(dstRawPubKey)
+	to, err := cli1.privateKey.PublicKey().Address()
 	require.Nil(t, err)
 
-	// init registry first
-	adminDid := genUniqueRelaychainDID(fromAdmin1.String())
-	args := []*pb.Arg{
-		pb.String(adminDid),
-	}
-	ret, err := adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "Init", nil, args...)
-	require.Nil(t, err)
-	require.True(t, ret.IsSuccess(), string(ret.Ret))
-	// set admin for method registry for other nodes
-	args = []*pb.Arg{
-		pb.String(adminDid),
-		pb.String(genUniqueRelaychainDID(fromAdmin2.String())),
-	}
-	ret, err = adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "AddAdmin", nil, args...)
-	require.Nil(t, err)
-	require.True(t, ret.IsSuccess(), string(ret.Ret))
-
-	args = []*pb.Arg{
-		pb.String(adminDid),
-		pb.String(genUniqueRelaychainDID(fromAdmin3.String())),
-	}
-	ret, err = adminCli1.InvokeBVMContract(constant.MethodRegistryContractAddr.Address(), "AddAdmin", nil, args...)
-	require.Nil(t, err)
-	require.True(t, ret.IsSuccess(), string(ret.Ret))
+	appchain0 := "appchain" + from.String()
+	appchain1 := "appchain" + to.String()
 
 	// register src appchain
-	appchainMethod := fmt.Sprintf("appchain%s", from.String())
-	fmt.Println("appchainMethod", appchainMethod)
-	r, err := cli.InvokeBVMContract(
+	r, err := cli0.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
 		"Register", nil,
-		pb.String(appchainMethod),
+		pb.String(appchain0),
 		pb.String(docAddr), pb.String(docHash),
 		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
-		String("hyperchain"), String("1.0.0"), String(pubKey),
+		String("hyperchain"), String("1.0.0"), String(srcPubKey), String(""),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
 
-	// vote for appchain register
+	//vote for appchain register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
-	privKey, err := asym.GenerateKeyPair(crypto.Secp256k1)
-	require.Nil(t, err)
-
-	dstRawPubKey, err := privKey.PublicKey().Bytes()
-	require.Nil(t, err)
-	dstPubKey := base64.StdEncoding.EncodeToString(dstRawPubKey)
-	to, err := privKey.PublicKey().Address()
-	require.Nil(t, err)
-
-	dstAppchainMethod := fmt.Sprintf("appchain%s", to.String())
 	// register dst appchain
-	fmt.Println("dstAppchainMethod", dstAppchainMethod)
-	r, err = cli.InvokeBVMContract(
+	r, err = cli1.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
 		"Register", nil,
-		pb.String(dstAppchainMethod),
+		pb.String(appchain1),
 		pb.String(docAddr), pb.String(docHash),
 		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
-		String("hyperchain"), String("1.0.0"), String(dstPubKey),
+		String("hyperchain"), String("1.0.0"), String(dstPubKey), String("register"),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
@@ -234,20 +224,44 @@ func sendInterchaintx(t *testing.T, cli *ChainClient, from types.Address) {
 
 	// vote for appchain register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
-
-	appchainID := fmt.Sprintf("did:bitxhub:%s:.", appchainMethod)
-	dstAppchainID := fmt.Sprintf("did:bitxhub:%s:.", dstAppchainMethod)
 	// deploy rule for validation
-	proposalId = deployRule(t, cli, appchainID)
+	proposalId = deployRule(t, cli0, appchain0)
 
 	// vote for rule register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
-	ibtp := getIBTP(t, appchainID, dstAppchainID, 1, pb.IBTP_INTERCHAIN, proof)
+	srcServiceID := fmt.Sprintf("1356:%s:%s", appchain0, from.String())
+	dstServiceID := fmt.Sprintf("1356:%s:%s", appchain1, to.String())
 
-	tx, _ := cli.GenerateIBTPTx(ibtp)
+	// register src service
+	r, err = cli0.InvokeBVMContract(
+		constant.ServiceMgrContractAddr.Address(),
+		"Register", nil,
+		pb.String(appchain0),
+		pb.String(from.String()),
+		pb.String("service 0"), pb.String("service"),
+		String("contract invoker"), Bool(true), String(dstServiceID), Bytes(nil),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+
+	// register dst service
+	r, err = cli1.InvokeBVMContract(
+		constant.ServiceMgrContractAddr.Address(),
+		"Register", nil,
+		pb.String(appchain1),
+		pb.String(to.String()),
+		pb.String("service 1"), pb.String("service"),
+		String("contract invoker"), Bool(true), String(srcServiceID), Bytes(nil),
+	)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+
+	ibtp := getIBTP(t, srcServiceID, dstServiceID, 1, pb.IBTP_INTERCHAIN, proof)
+
+	tx, _ := cli0.GenerateIBTPTx(ibtp)
 	tx.Extra = proof
-	r, err = cli.SendTransactionWithReceipt(tx, nil)
+	r, err = cli0.SendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 }
@@ -292,7 +306,7 @@ func deployRule(t *testing.T, cli *ChainClient, appchainID string) string {
 
 	// register rule
 	ret, err := cli.InvokeBVMContract(constant.RuleManagerContractAddr.Address(),
-		"RegisterRule", nil, pb.String(appchainID), pb.String(contractAddr.String()))
+		"RegisterRule", nil, pb.String(appchainID), pb.String(contractAddr.String()), pb.String(""))
 	require.Nil(t, err)
 	require.True(t, ret.IsSuccess(), string(ret.Ret))
 
@@ -346,4 +360,27 @@ func getAdminCli(t *testing.T, keyPath string) *ChainClient {
 		WithPrivateKey(cfg.privateKey),
 	)
 	return cli
+}
+
+func transfer(t *testing.T, cli *ChainClient, to *types.Address, amount uint64, opt *TransactOpts) {
+	from, err := cli.privateKey.PublicKey().Address()
+	require.Nil(t, err)
+
+	data := &pb.TransactionData{
+		Amount: fmt.Sprintf("%d", amount),
+	}
+
+	payload, err := data.Marshal()
+	require.Nil(t, err)
+
+	tx := &pb.BxhTransaction{
+		From:      from,
+		To:        to,
+		Payload:   payload,
+		Amount:    data.Amount,
+		Timestamp: time.Now().UnixNano(),
+	}
+
+	_, err = cli.SendTransaction(tx, opt)
+	require.Nil(t, err)
 }
