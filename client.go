@@ -23,7 +23,7 @@ type Client interface {
 	SetPrivateKey(crypto.PrivateKey)
 
 	//Send a readonly transaction to BitXHub. If the transaction is writable,
-	// this transaction will not be executed and error wil be returned.
+	// this transaction will not be executed and error will be returned.
 	SendView(tx *pb.BxhTransaction) (*pb.Receipt, error)
 
 	//Send a signed transaction to BitXHub. If the signature is illegal,
