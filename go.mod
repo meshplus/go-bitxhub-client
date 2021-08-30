@@ -8,8 +8,8 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/meshplus/bitxhub-kit v1.2.1-0.20210616114532-4849447f09e1
-	github.com/meshplus/bitxhub-model v1.2.1-0.20210811073359-62d4143881d5
+	github.com/meshplus/bitxhub-kit v1.2.1-0.20210830031953-cf5f83f2e1dd
+	github.com/meshplus/bitxhub-model v1.2.1-0.20210830032101-d663f51ed8a3
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0
