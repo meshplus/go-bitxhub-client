@@ -117,6 +117,9 @@ type Client interface {
 
 	//Update the master pier status
 	HeartBeat(address string, index string) (*pb.Response, error)
+
+	// GetChainID get BitXHub Chain ID
+	GetChainID() (uint64, error)
 }
 
 type TransactOpts struct {
