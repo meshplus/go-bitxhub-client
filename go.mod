@@ -4,12 +4,13 @@ go 1.13
 
 require (
 	github.com/Rican7/retry v0.1.0
+	github.com/bitxhub/crypto-gm v0.0.0-20210825015341-e035b646648d
 	github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7 // indirect
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/meshplus/bitxhub-kit v1.2.1-0.20210616114532-4849447f09e1
-	github.com/meshplus/bitxhub-model v1.2.1-0.20210811073359-62d4143881d5
+	github.com/meshplus/bitxhub-kit v1.2.1-0.20210901014031-ee93dd4f4ced
+	github.com/meshplus/bitxhub-model v1.2.1-0.20210901014152-aadfe05d27a5
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0
@@ -21,3 +22,5 @@ require (
 	google.golang.org/grpc v1.33.1
 	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
 )
+
+replace github.com/ultramesh/crypto-gm => git.hyperchain.cn/dmlab/crypto-gm v0.2.14
