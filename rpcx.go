@@ -23,6 +23,7 @@ const (
 	GetReceiptTimeout        = 2 * time.Second
 	GetAccountBalanceTimeout = 2 * time.Second
 	GetTPSTimeout            = 2 * time.Second
+	GetChainIDTimeout        = 2 * time.Second
 	CheckPierTimeout         = 60 * time.Second
 )
 
@@ -317,6 +318,28 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 		Begin: begin,
 		End:   end,
 	})
+
+	if err != nil {
+		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+
+	if resp == nil || resp.Data == nil {
+		return 0, fmt.Errorf("empty response")
+	}
+
+	return binary.LittleEndian.Uint64(resp.Data), nil
+}
+
+func (cli *ChainClient) GetChainID() (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetChainIDTimeout)
+	defer cancel()
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := grpcClient.broker.GetChainID(ctx, &pb.Empty{})
 
 	if err != nil {
 		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
