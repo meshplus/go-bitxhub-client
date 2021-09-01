@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/meshplus/bitxhub-kit v1.2.1-0.20210901014031-ee93dd4f4ced
+	github.com/meshplus/bitxhub-kit v1.2.1-0.20210902085548-07f4fa85bfc9
 	github.com/meshplus/bitxhub-model v1.2.1-0.20210901014152-aadfe05d27a5
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0

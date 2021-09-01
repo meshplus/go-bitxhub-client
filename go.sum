@@ -359,6 +359,7 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/meshplus/bitxhub-kit v1.2.1-0.20210825014814-45c6672bd9d9/go.mod h1:wrEdhHp1tktzdwcWb4bOxYsVc+KkcrYL18IYWYeumPQ=
 github.com/meshplus/bitxhub-kit v1.2.1-0.20210901014031-ee93dd4f4ced h1:BHqhjSkxhqZDjORJjz9la/+NTrQpEXn+E4os3WPB79E=
 github.com/meshplus/bitxhub-kit v1.2.1-0.20210901014031-ee93dd4f4ced/go.mod h1:wrEdhHp1tktzdwcWb4bOxYsVc+KkcrYL18IYWYeumPQ=
+github.com/meshplus/bitxhub-kit v1.2.1-0.20210902085548-07f4fa85bfc9/go.mod h1:wrEdhHp1tktzdwcWb4bOxYsVc+KkcrYL18IYWYeumPQ=
 github.com/meshplus/bitxhub-model v1.2.1-0.20210901014152-aadfe05d27a5 h1:jVxu8a+zeURaNv9nGOVJ8TkCByDwaH9PWr0i4Z7GeJc=
 github.com/meshplus/bitxhub-model v1.2.1-0.20210901014152-aadfe05d27a5/go.mod h1:f8UBsDLFBUhah5l5hufpomaZRtfaChUtE+xPTm9U6h4=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=

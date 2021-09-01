@@ -12,6 +12,7 @@ import (
 	"github.com/Rican7/retry/strategy"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
+	_ "github.com/meshplus/go-bitxhub-client/imports"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
