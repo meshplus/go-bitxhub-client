@@ -162,6 +162,21 @@ func (mr *MockClientMockRecorder) GetBlocks(start, end interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), start, end)
 }
 
+// GetChainID mocks base method.
+func (m *MockClient) GetChainID() (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetChainID")
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetChainID indicates an expected call of GetChainID.
+func (mr *MockClientMockRecorder) GetChainID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChainID", reflect.TypeOf((*MockClient)(nil).GetChainID))
+}
+
 // GetChainMeta mocks base method.
 func (m *MockClient) GetChainMeta() (*pb.ChainMeta, error) {
 	m.ctrl.T.Helper()
