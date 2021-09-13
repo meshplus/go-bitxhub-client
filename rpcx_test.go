@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ import (
 var (
 	cfg = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60011", EnableTLS: true, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
+			{Addr: "localhost:60011", EnableTLS: false, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
 				AccessCert: "testdata/node1/certs/gateway.cert", AccessKey: "testdata/node1/certs/gateway.priv"},
 			//{Addr: "localhost:60012", EnableTLS: true, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
 			//	AccessCert: "testdata/node2/certs/gateway.cert", AccessKey: "testdata/node2/certs/gateway.priv"},
@@ -191,7 +190,7 @@ func TestChainClient_GetTransaction(t *testing.T) {
 
 	receipt, err := cli.SendTransactionWithReceipt(tx, nil)
 	require.Nil(t, err)
-	require.True(t, strings.Contains(string(receipt.GetRet()), "insufficeient balance"), string(receipt.GetRet()))
+	//require.True(t, strings.Contains(string(receipt.GetRet()), "insufficeient balance"), string(receipt.GetRet()))
 
 	txx, err := cli.GetTransaction(receipt.TxHash.String())
 	require.Nil(t, err)
