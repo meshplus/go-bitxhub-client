@@ -3,7 +3,6 @@ package rpcx
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -26,6 +25,8 @@ const (
 	relaychainAdminDIDPrefix = "did:bitxhub:relayroot"
 	docAddr                  = "/ipfs/QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
 	docHash                  = "QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
+	HappyRuleAddr            = "0x00000000000000000000000000000000000000a2"
+	ServiceCallContract      = "CallContract"
 )
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
@@ -90,8 +91,14 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	nonce, err := cli.GetPendingNonceByAccount(addr.String())
 	require.Nil(t, err)
 
-	transfer(t, cli, from, 1000000000000000, &TransactOpts{Nonce: nonce})
-	transfer(t, cli, to, 1000000000000000, &TransactOpts{Nonce: nonce + 1})
+	transfer(t, cli, from, 1000000000000000, &TransactOpts{
+		Nonce: nonce,
+		From:  from.String(),
+	})
+	transfer(t, cli, to, 1000000000000000, &TransactOpts{
+		Nonce: nonce + 1,
+		From:  to.String(),
+	})
 
 	sendInterchaintx(t, cli0, cli1)
 
@@ -178,15 +185,14 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	adminCli2 := getAdminCli(t, adminKey2)
 	adminCli3 := getAdminCli(t, adminKey3)
 
-	srcRawPubKey, err := cli0.privateKey.PublicKey().Bytes()
-	require.Nil(t, err)
-	srcPubKey := base64.StdEncoding.EncodeToString(srcRawPubKey)
+	//srcRawPubKey, err := cli0.privateKey.PublicKey().Bytes()
+	//require.Nil(t, err)
+	//srcPubKey := base64.StdEncoding.EncodeToString(srcRawPubKey)
 	from, err := cli0.privateKey.PublicKey().Address()
 
-	dstRawPubKey, err := cli1.privateKey.PublicKey().Bytes()
-	require.Nil(t, err)
-
-	dstPubKey := base64.StdEncoding.EncodeToString(dstRawPubKey)
+	//dstRawPubKey, err := cli1.privateKey.PublicKey().Bytes()
+	//require.Nil(t, err)
+	//dstPubKey := base64.StdEncoding.EncodeToString(dstRawPubKey)
 	to, err := cli1.privateKey.PublicKey().Address()
 	require.Nil(t, err)
 
@@ -196,11 +202,13 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	// register src appchain
 	r, err := cli0.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
-		"Register", nil,
+		"RegisterAppchain", nil,
 		pb.String(appchain0),
-		pb.String(docAddr), pb.String(docHash),
-		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
-		String("hyperchain"), String("1.0.0"), String(srcPubKey), String(""),
+		Bytes(validators),
+		String("brokerAddr"),
+		String("desc"),
+		String(HappyRuleAddr),
+		String("reason"),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
@@ -212,11 +220,13 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	// register dst appchain
 	r, err = cli1.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
-		"Register", nil,
+		"RegisterAppchain", nil,
 		pb.String(appchain1),
-		pb.String(docAddr), pb.String(docHash),
-		String(string(validators)), String("rbft"), String("hyperchain"), String("hpc"),
-		String("hyperchain"), String("1.0.0"), String(dstPubKey), String("register"),
+		Bytes(validators),
+		String("brokerAddr"),
+		String("desc"),
+		String(HappyRuleAddr),
+		String("reason"),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
@@ -224,38 +234,53 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 
 	// vote for appchain register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
-	// deploy rule for validation
-	proposalId = deployRule(t, cli0, appchain0)
 
-	// vote for rule register
-	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
-
-	srcServiceID := fmt.Sprintf("1356:%s:%s", appchain0, from.String())
-	dstServiceID := fmt.Sprintf("1356:%s:%s", appchain1, to.String())
+	serviceID0 := "service0"
+	serviceID1 := "service1"
+	srcServiceID := fmt.Sprintf("1356:%s:%s", appchain0, serviceID0)
+	dstServiceID := fmt.Sprintf("1356:%s:%s", appchain1, serviceID1)
 
 	// register src service
 	r, err = cli0.InvokeBVMContract(
 		constant.ServiceMgrContractAddr.Address(),
-		"Register", nil,
+		"RegisterService", nil,
 		pb.String(appchain0),
-		pb.String(from.String()),
-		pb.String("service 0"), pb.String("service"),
-		String("contract invoker"), Bool(true), String(dstServiceID), Bytes(nil),
+		pb.String(serviceID0),
+		pb.String("name0"),
+		pb.String(ServiceCallContract),
+		pb.String("intro"),
+		pb.Bool(true),
+		pb.String(""),
+		pb.String("details"),
+		pb.String("reason"),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	proposalId = gjson.Get(string(r.Ret), "proposal_id").String()
+
+	// vote for service0 register
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
 	// register dst service
 	r, err = cli1.InvokeBVMContract(
 		constant.ServiceMgrContractAddr.Address(),
-		"Register", nil,
+		"RegisterService", nil,
 		pb.String(appchain1),
-		pb.String(to.String()),
-		pb.String("service 1"), pb.String("service"),
-		String("contract invoker"), Bool(true), String(srcServiceID), Bytes(nil),
+		pb.String(serviceID1),
+		pb.String("name1"),
+		pb.String(ServiceCallContract),
+		pb.String("intro"),
+		pb.Bool(true),
+		pb.String(""),
+		pb.String("details"),
+		pb.String("reason"),
 	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	proposalId = gjson.Get(string(r.Ret), "proposal_id").String()
+
+	// vote for service1 register
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
 	ibtp := getIBTP(t, srcServiceID, dstServiceID, 1, pb.IBTP_INTERCHAIN, proof)
 
@@ -348,7 +373,7 @@ func getAdminCli(t *testing.T, keyPath string) *ChainClient {
 	require.Nil(t, err)
 	var cfg = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60011", EnableTLS: true, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
+			{Addr: "localhost:60011", EnableTLS: false, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
 				AccessCert: "testdata/node1/certs/gateway.cert", AccessKey: "testdata/node1/certs/gateway.priv"},
 		},
 		logger:     logrus.New(),
