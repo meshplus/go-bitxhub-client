@@ -22,6 +22,14 @@ func Uint64(i uint64) *pb.Arg {
 	return generateArg(pb.Arg_U64, []byte(fmt.Sprintf("%d", i)))
 }
 
+func Float32(f float32) *pb.Arg {
+	return generateArg(pb.Arg_F32, []byte(fmt.Sprintf("%g", f)))
+}
+
+func Float64(f float64) *pb.Arg {
+	return generateArg(pb.Arg_F64, []byte(fmt.Sprintf("%g", f)))
+}
+
 func String(content string) *pb.Arg {
 	return generateArg(pb.Arg_String, []byte(content))
 }
