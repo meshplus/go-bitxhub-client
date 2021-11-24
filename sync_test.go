@@ -200,14 +200,20 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	appchain1 := "appchain" + to.String()
 
 	// register src appchain
+	appchainAdmin, err := cli0.privateKey.PublicKey().Address()
+	require.Nil(t, err)
 	r, err := cli0.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
 		"RegisterAppchain", nil,
-		pb.String(appchain0),
+		pb.String(appchain0), // id
+		String(appchain0),    // name
+		String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),
 		String("desc"),
 		String(HappyRuleAddr),
+		String("url"),
+		String(appchainAdmin.String()),
 		String("reason"),
 	)
 	require.Nil(t, err)
@@ -218,14 +224,19 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
 	// register dst appchain
+	appchainAdmin1, err := cli1.privateKey.PublicKey().Address()
 	r, err = cli1.InvokeBVMContract(
 		constant.AppchainMgrContractAddr.Address(),
 		"RegisterAppchain", nil,
 		pb.String(appchain1),
+		pb.String(appchain1),
+		pb.String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),
 		String("desc"),
 		String(HappyRuleAddr),
+		String("url"),
+		String(appchainAdmin1.String()),
 		String("reason"),
 	)
 	require.Nil(t, err)
@@ -235,8 +246,8 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	// vote for appchain register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
-	serviceID0 := "service0"
-	serviceID1 := "service1"
+	serviceID0 := "0xB2dD6977169c5067d3729E3deB9a82c3e7502BFb"
+	serviceID1 := "0xB2dD6977169c5067d3729E3deB9a82c3e7502BF1"
 	srcServiceID := fmt.Sprintf("1356:%s:%s", appchain0, serviceID0)
 	dstServiceID := fmt.Sprintf("1356:%s:%s", appchain1, serviceID1)
 
@@ -249,7 +260,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		pb.String("name0"),
 		pb.String(ServiceCallContract),
 		pb.String("intro"),
-		pb.Bool(true),
+		pb.Uint64(1),
 		pb.String(""),
 		pb.String("details"),
 		pb.String("reason"),
@@ -270,7 +281,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		pb.String("name1"),
 		pb.String(ServiceCallContract),
 		pb.String("intro"),
-		pb.Bool(true),
+		pb.Uint64(1),
 		pb.String(""),
 		pb.String("details"),
 		pb.String("reason"),
@@ -340,9 +351,8 @@ func deployRule(t *testing.T, cli *ChainClient, appchainID string) string {
 
 func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
 	content := &pb.Content{
-		Func:     "interchainCharge",
-		Args:     [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
-		Callback: "interchainConfirm",
+		Func: "interchainCharge",
+		Args: [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
 	}
 
 	bytes, _ := content.Marshal()
