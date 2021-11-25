@@ -72,6 +72,9 @@ type Client interface {
 	//Subscribe to event notifications from BitXHub.
 	Subscribe(context.Context, pb.SubscriptionRequest_Type, []byte) (<-chan interface{}, error)
 
+	//SubscribeAudit to event notifications from BitXHub with permission.
+	SubscribeAudit(context.Context, pb.AuditSubscriptionRequest_Type, uint64, []byte) (<-chan interface{}, error)
+
 	//Deploy the contract, the contract address will be returned when the deployment is successful.
 	DeployContract(contract []byte, opts *TransactOpts) (contractAddr *types.Address, err error)
 

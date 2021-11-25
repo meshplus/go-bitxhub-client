@@ -546,3 +546,18 @@ func (mr *MockClientMockRecorder) Subscribe(arg0, arg1, arg2 interface{}) *gomoc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockClient)(nil).Subscribe), arg0, arg1, arg2)
 }
+
+// SubscribeAudit mocks base method.
+func (m *MockClient) SubscribeAudit(arg0 context.Context, arg1 pb.AuditSubscriptionRequest_Type, arg2 uint64, arg3 []byte) (<-chan interface{}, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubscribeAudit", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(<-chan interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubscribeAudit indicates an expected call of SubscribeAudit.
+func (mr *MockClientMockRecorder) SubscribeAudit(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAudit", reflect.TypeOf((*MockClient)(nil).SubscribeAudit), arg0, arg1, arg2, arg3)
+}
