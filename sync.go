@@ -9,6 +9,11 @@ import (
 )
 
 func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, ch chan<- *pb.BlockHeader) error {
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return err
@@ -46,6 +51,11 @@ func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, c
 }
 
 func (cli *ChainClient) GetInterchainTxWrappers(ctx context.Context, pid string, begin, end uint64, ch chan<- *pb.InterchainTxWrappers) error {
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return err

@@ -19,6 +19,11 @@ func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksRespon
 	ctx, cancel := context.WithTimeout(context.Background(), GetBlocksTimeout)
 	defer cancel()
 
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -38,6 +43,11 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 	ctx, cancel := context.WithTimeout(context.Background(), GetBlockTimeout)
 	defer cancel()
 
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -56,6 +66,11 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 func (cli *ChainClient) GetChainStatus() (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {

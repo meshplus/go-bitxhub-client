@@ -8,6 +8,11 @@ import (
 )
 
 func (cli *ChainClient) SubscribeAudit(ctx context.Context, typ pb.AuditSubscriptionRequest_Type, blockHeight uint64, extra []byte) (<-chan interface{}, error) {
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -48,7 +53,7 @@ func (cli *ChainClient) SubscribeAudit(ctx context.Context, typ pb.AuditSubscrip
 				case pb.AuditSubscriptionRequest_AUDIT_NODE:
 					auditInfo := &pb.AuditTxInfo{}
 					if err := auditInfo.Unmarshal(resp.Data); err != nil {
-						cli.logger.Error("receive audit info error: ", resp.Data)
+						cli.logger.Errorf("receive audit info error: %v", err)
 						return
 					}
 					ret = auditInfo

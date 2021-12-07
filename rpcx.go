@@ -13,6 +13,7 @@ import (
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -25,6 +26,8 @@ const (
 	GetTPSTimeout            = 2 * time.Second
 	GetChainIDTimeout        = 2 * time.Second
 	CheckPierTimeout         = 60 * time.Second
+
+	ACCOUNT_KEY = "account"
 )
 
 type Interchain struct {
@@ -45,9 +48,25 @@ type ChainClient struct {
 	ibtpSeqNo   int64
 }
 
+func (cli *ChainClient) SetCtxMetadata(ctx context.Context) (context.Context, error) {
+	addr, err := cli.privateKey.PublicKey().Address()
+	if err != nil {
+		return nil, fmt.Errorf("get client accout err: %v", err)
+	}
+
+	md := metadata.New(map[string]string{ACCOUNT_KEY: addr.String()})
+	accountCtx := metadata.NewOutgoingContext(ctx, md)
+	return accountCtx, nil
+}
+
 func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetAccountBalanceTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -131,6 +150,11 @@ func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse,
 	ctx, cancel := context.WithTimeout(context.Background(), GetTransactionTimeout)
 	defer cancel()
 
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -152,6 +176,11 @@ func (cli *ChainClient) SetPrivateKey(key crypto.PrivateKey) {
 func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -189,6 +218,12 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return "", fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return "", err
@@ -229,6 +264,12 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -250,6 +291,11 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetReceiptTimeout)
 	defer cancel()
 
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -267,6 +313,11 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendMultiSignsTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -286,6 +337,11 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -308,6 +364,11 @@ func CheckReceipt(receipt *pb.Receipt) bool {
 func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetTPSTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
@@ -333,6 +394,11 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 func (cli *ChainClient) GetChainID() (uint64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetChainIDTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
