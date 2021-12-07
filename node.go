@@ -16,6 +16,11 @@ func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
 
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
 		return nil, err
@@ -30,6 +35,11 @@ func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetInfoTimeout)
 	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
 
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {

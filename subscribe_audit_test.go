@@ -25,6 +25,18 @@ func TestChainClient_SubscribeAudit(t *testing.T) {
 	c, err := nodeCli.SubscribeAudit(ctx, pb.AuditSubscriptionRequest_AUDIT_NODE, 1, nil)
 	require.Nil(t, err)
 
+	// GetBlocks
+	_, err = nodeCli.GetBlocks(1, 1)
+	require.NotNil(t, err)
+
+	// GetBlock
+	_, err = nodeCli.GetBlock("1", pb.GetBlockRequest_HEIGHT)
+	require.NotNil(t, err)
+
+	// GetChainStatus
+	_, err = nodeCli.GetChainStatus()
+	require.NotNil(t, err)
+
 	for {
 		select {
 		case infoData, ok := <-c:
