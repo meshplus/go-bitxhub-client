@@ -187,7 +187,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 		opts.From = tx.From.String() // set default from for opts
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
