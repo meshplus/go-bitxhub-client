@@ -169,6 +169,29 @@ func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse,
 	return response, nil
 }
 
+func (cli *ChainClient) GetPendingTransaction(hash string) (*pb.GetTransactionResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), GetTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := grpcClient.broker.GetPendingTransaction(ctx, &pb.TransactionHashMsg{
+		TxHash: hash,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
+}
+
 func (cli *ChainClient) SetPrivateKey(key crypto.PrivateKey) {
 	cli.privateKey = key
 }
