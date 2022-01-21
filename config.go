@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	blockChanNumber = 1024
-	defaultTimeout  = 1 * time.Second
+	blockChanNumber     = 1024
+	defaultTimeout      = 10 * time.Second
+	defaultResourceSize = 16
 )
 
 type config struct {
-	logger       Logger
-	privateKey   crypto.PrivateKey
-	nodesInfo    []*NodeInfo
-	ipfsAddrs    []string
-	timeoutLimit time.Duration // timeout limit config for dialing grpc
+	logger        Logger
+	privateKey    crypto.PrivateKey
+	nodesInfo     []*NodeInfo
+	ipfsAddrs     []string
+	timeoutLimit  time.Duration // timeout limit config for dialing grpc
+	resourcesSize int           // resources channel size
 }
 
 type NodeInfo struct {
@@ -63,6 +65,12 @@ func WithTimeoutLimit(limit time.Duration) Option {
 	}
 }
 
+func WithResourcesSize(size int) Option {
+	return func(config *config) {
+		config.resourcesSize = size
+	}
+}
+
 func generateConfig(opts ...Option) (*config, error) {
 	config := &config{}
 	for _, opt := range opts {
@@ -91,6 +99,10 @@ func checkConfig(config *config) error {
 
 	if config.timeoutLimit == 0 {
 		config.timeoutLimit = defaultTimeout
+	}
+
+	if config.resourcesSize == 0 {
+		config.resourcesSize = defaultResourceSize
 	}
 
 	// if EnableTLS is set, then tls certs must be provided

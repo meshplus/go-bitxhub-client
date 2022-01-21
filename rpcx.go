@@ -53,6 +53,8 @@ func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) 
 	if err != nil {
 		return nil, err
 	}
+	defer cli.release(grpcClient)
+
 	request := &pb.Address{
 		Address: address,
 	}
@@ -135,7 +137,7 @@ func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse,
 	if err != nil {
 		return nil, err
 	}
-
+	defer cli.release(grpcClient)
 	response, err := grpcClient.broker.GetTransaction(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
@@ -157,7 +159,7 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer cli.release(grpcClient)
 	response, err := grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
@@ -191,15 +193,20 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	defer cancel()
 	grpcClient, err := cli.pool.getClient()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("get pool client err: %s", err)
 	}
-
+	defer cli.release(grpcClient)
 	var nonce uint64
 	if opts.Nonce == 0 {
+		cli.release(grpcClient)
 		// no nonce set for tx, then use latest nonce from bitxhub
 		nonce, err = cli.GetPendingNonceByAccount(opts.From)
 		if err != nil {
 			return "", fmt.Errorf("%w: failed to retrieve nonce for account %s for %s", ErrBrokenNetwork, opts.From, err.Error())
+		}
+		grpcClient, err = cli.pool.getClient()
+		if err != nil {
+			return "", fmt.Errorf("get pool client err: %s", err)
 		}
 	} else {
 		nonce = opts.Nonce
@@ -222,7 +229,6 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 			return "", err
 		}
 	}
-
 	return msg.TxHash, err
 }
 
@@ -233,7 +239,7 @@ func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer cli.release(grpcClient)
 	if err := tx.Sign(cli.privateKey); err != nil {
 		return nil, fmt.Errorf("tx sign: %w", err)
 	}
@@ -242,7 +248,6 @@ func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
-
 	return receipt, nil
 }
 
@@ -254,7 +259,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer cli.release(grpcClient)
 	response, err := grpcClient.broker.GetReceipt(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
@@ -272,7 +277,7 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 	if err != nil {
 		return nil, err
 	}
-
+	defer cli.release(grpcClient)
 	response, err := grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
 		Content: content,
 		Type:    typ,
@@ -291,7 +296,7 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 	if err != nil {
 		return 0, err
 	}
-
+	defer cli.release(grpcClient)
 	res, err := grpcClient.broker.GetPendingNonceByAccount(ctx, &pb.Address{
 		Address: account,
 	})
@@ -313,7 +318,7 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	defer cli.release(grpcClient)
 	resp, err := grpcClient.broker.GetTPS(ctx, &pb.GetTPSRequest{
 		Begin: begin,
 		End:   end,
@@ -338,7 +343,7 @@ func (cli *ChainClient) GetChainID() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	defer cli.release(grpcClient)
 	resp, err := grpcClient.broker.GetChainID(ctx, &pb.Empty{})
 
 	if err != nil {

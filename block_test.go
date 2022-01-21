@@ -47,6 +47,7 @@ func Cli() (*ChainClient, error) {
 		WithPrivateKey(privKey),
 		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
 		WithTimeoutLimit(500*time.Millisecond),
+		WithResourcesSize(4),
 	)
 	return cli, err
 }
@@ -63,6 +64,7 @@ func Cli1() (*ChainClient, error) {
 		WithPrivateKey(privKey),
 		WithIPFSInfo([]string{"http://localhost:5001", "https://ipfs.infura.io:5001"}),
 		WithTimeoutLimit(500*time.Millisecond),
+		WithResourcesSize(4),
 	)
 	return cli, err
 }

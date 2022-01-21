@@ -18,7 +18,7 @@ import (
 var (
 	cfg = &config{
 		nodesInfo: []*NodeInfo{
-			{Addr: "localhost:60011", EnableTLS: false, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
+			{Addr: "localhost:6161", EnableTLS: false, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
 				AccessCert: "testdata/node1/certs/gateway.cert", AccessKey: "testdata/node1/certs/gateway.priv"},
 			//{Addr: "localhost:60012", EnableTLS: true, CertPath: "testdata/node1/certs/agency.cert", CommonName: "BitXHub",
 			//	AccessCert: "testdata/node2/certs/gateway.cert", AccessKey: "testdata/node2/certs/gateway.priv"},
