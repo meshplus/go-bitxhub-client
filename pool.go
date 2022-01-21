@@ -68,6 +68,8 @@ func (pool *ConnectionPool) Close() error {
 // get grpcClient will try to get idle grpcClient
 func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 	if pool.currentConn != nil {
+		newClientTicker := time.NewTicker(1000 * time.Millisecond)
+		defer newClientTicker.Stop()
 		for {
 			select {
 			case cli, ok := <-pool.resources:
@@ -76,68 +78,82 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 				}
 				//pool.logger.Infof("ge client successfully")
 				return cli, nil
+			case <-newClientTicker.C:
+				pool.logger.Infof("waiting cli idle timer expired,try to create new client\n")
+				cli, err := pool.newClient()
+				if err != nil {
+					return nil, fmt.Errorf("new client err: %s", err.Error())
+				}
+				return cli, nil
 			default:
 				pool.logger.Debugf("client available is %t,waiting cli idle\n", pool.currentConn.available())
 			}
 		}
 	} else {
-		pool.lock.Lock()
-		defer pool.lock.Unlock()
-		randGenerator := rand.New(rand.NewSource(time.Now().Unix()))
-		if err := retry.Retry(func(attempt uint) error {
-			randomIndex := randGenerator.Intn(len(pool.connections))
-			cli := pool.connections[randomIndex]
-			if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
-				// try to build a connect or reconnect
-				opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
-				// if EnableTLS is set, then setup connection with ca cert
-				if cli.nodeInfo.EnableTLS {
-					certPathByte, err := ioutil.ReadFile(cli.nodeInfo.CertPath)
-					if err != nil {
-						return err
-					}
-					cp := x509.NewCertPool()
-					if !cp.AppendCertsFromPEM(certPathByte) {
-						return fmt.Errorf("credentials: failed to append certificates")
-					}
-					cert, err := tls.LoadX509KeyPair(cli.nodeInfo.AccessCert, cli.nodeInfo.AccessKey)
-					creds := credentials.NewTLS(&tls.Config{
-						Certificates: []tls.Certificate{cert}, ServerName: cli.nodeInfo.CommonName, RootCAs: cp})
-
-					if err != nil {
-						pool.logger.Debugf("Creat tls credentials from %s for client %s", cli.nodeInfo.CertPath, cli.nodeInfo.Addr)
-						return fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
-					}
-					opts = append(opts, grpc.WithTransportCredentials(creds))
-				} else {
-					opts = append(opts, grpc.WithInsecure())
-				}
-				conn, err := grpc.Dial(cli.nodeInfo.Addr, opts...)
-				if err != nil {
-					pool.logger.Debugf("Dial with addr: %s fail", cli.nodeInfo.Addr)
-					return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, cli.nodeInfo.Addr)
-				}
-				cli.conn = conn
-				cli.broker = pb.NewChainBrokerClient(conn)
-				pool.currentConn = cli
-				pool.logger.Infof("Establish connection with bitxhub %s successfully", cli.nodeInfo.Addr)
-				return nil
-			}
-
-			if cli.available() {
-				pool.currentConn = cli
-				return nil
-			}
-			pool.logger.Debugf("Client for %s is not usable", pool.connections[randomIndex].nodeInfo.Addr)
-			return fmt.Errorf("%w: all nodes are not available", ErrBrokenNetwork)
-		}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.connections)))); err != nil {
-			return nil, err
+		cli, err := pool.newClient()
+		if err != nil {
+			return nil, fmt.Errorf("new client err: %s", err.Error())
 		}
-		pool.logger.Infof("create client")
-		return pool.currentConn, nil
+		return cli, nil
 	}
 }
 
+func (pool *ConnectionPool) newClient() (*grpcClient, error) {
+	pool.lock.Lock()
+	defer pool.lock.Unlock()
+	randGenerator := rand.New(rand.NewSource(time.Now().Unix()))
+	if err := retry.Retry(func(attempt uint) error {
+		randomIndex := randGenerator.Intn(len(pool.connections))
+		cli := pool.connections[randomIndex]
+		if cli.conn == nil || cli.conn.GetState() == connectivity.Shutdown {
+			// try to build a connect or reconnect
+			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
+			// if EnableTLS is set, then setup connection with ca cert
+			if cli.nodeInfo.EnableTLS {
+				certPathByte, err := ioutil.ReadFile(cli.nodeInfo.CertPath)
+				if err != nil {
+					return err
+				}
+				cp := x509.NewCertPool()
+				if !cp.AppendCertsFromPEM(certPathByte) {
+					return fmt.Errorf("credentials: failed to append certificates")
+				}
+				cert, err := tls.LoadX509KeyPair(cli.nodeInfo.AccessCert, cli.nodeInfo.AccessKey)
+				creds := credentials.NewTLS(&tls.Config{
+					Certificates: []tls.Certificate{cert}, ServerName: cli.nodeInfo.CommonName, RootCAs: cp})
+
+				if err != nil {
+					pool.logger.Debugf("Creat tls credentials from %s for client %s", cli.nodeInfo.CertPath, cli.nodeInfo.Addr)
+					return fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
+				}
+				opts = append(opts, grpc.WithTransportCredentials(creds))
+			} else {
+				opts = append(opts, grpc.WithInsecure())
+			}
+			conn, err := grpc.Dial(cli.nodeInfo.Addr, opts...)
+			if err != nil {
+				pool.logger.Debugf("Dial with addr: %s fail", cli.nodeInfo.Addr)
+				return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, cli.nodeInfo.Addr)
+			}
+			cli.conn = conn
+			cli.broker = pb.NewChainBrokerClient(conn)
+			pool.currentConn = cli
+			pool.logger.Infof("Establish connection with bitxhub %s successfully", cli.nodeInfo.Addr)
+			return nil
+		}
+
+		if cli.available() {
+			pool.currentConn = cli
+			return nil
+		}
+		pool.logger.Debugf("Client for %s is not usable", pool.connections[randomIndex].nodeInfo.Addr)
+		return fmt.Errorf("%w: all nodes are not available", ErrBrokenNetwork)
+	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.connections)))); err != nil {
+		return nil, err
+	}
+	//pool.logger.Infof("create client")
+	return pool.currentConn, nil
+}
 func (grpcCli *grpcClient) available() bool {
 	s := grpcCli.conn.GetState()
 	return s == connectivity.Idle || s == connectivity.Ready
@@ -158,7 +174,5 @@ func (cli *ChainClient) release(currentClient *grpcClient) {
 	case cli.pool.resources <- currentClient:
 		//cli.logger.Infof("release cli to resources")
 	default:
-		err = cli.pool.Close()
-		cli.logger.Errorf("close pool err :%s", err)
 	}
 }
