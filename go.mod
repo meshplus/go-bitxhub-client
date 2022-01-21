@@ -12,6 +12,7 @@ require (
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20210616114532-4849447f09e1
 	github.com/meshplus/bitxhub-model v1.2.1-0.20210629020432-d98febd566c1
 	github.com/meshplus/bitxid v0.0.0-20210412025850-e0eaf0f9063a
+	github.com/processout/grpc-go-pool v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.6.8
