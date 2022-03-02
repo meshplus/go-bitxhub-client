@@ -104,7 +104,7 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 			pool.logger.Debugf("Dial with addr: %s fail", nodeInfo.Addr)
 			return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, nodeInfo.Addr)
 		}
-		pool.logger.Infof("Establish connection with bitxhub %s successfully, pool is %d", nodeInfo.Addr, pool.pool.Available())
+		pool.logger.Debugf("Establish connection with bitxhub %s successfully, pool is %d", nodeInfo.Addr, pool.pool.Available())
 		return nil
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.config.nodesInfo)))); err != nil {
 		return nil, err
