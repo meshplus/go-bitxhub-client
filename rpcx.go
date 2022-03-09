@@ -82,15 +82,19 @@ func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) 
 	return response, nil
 }
 
+var pool *ConnectionPool
+
 func New(opts ...Option) (*ChainClient, error) {
 	cfg, err := generateConfig(opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	pool, err := NewPool(cfg)
-	if err != nil {
-		return nil, err
+	if pool == nil {
+		pool, err = NewPool(cfg)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
