@@ -113,6 +113,9 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 }
 
 func (grpcCli *grpcClient) available() bool {
+	if grpcCli.conn.ClientConn == nil {
+		return false
+	}
 	s := grpcCli.conn.ClientConn.GetState()
 	return s == connectivity.Idle || s == connectivity.Ready
 }
