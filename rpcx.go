@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	grpcpool "github.com/processout/grpc-go-pool"
 	"strconv"
 	"time"
 
@@ -248,7 +249,9 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	}
 	defer func() {
 		if err := grpcClient.conn.Close(); err != nil {
-			cli.logger.Errorf("close conn err: %s", err)
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
 		}
 	}()
 	var nonce uint64
