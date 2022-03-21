@@ -20,7 +20,7 @@ import (
 
 type grpcClient struct {
 	broker pb.ChainBrokerClient
-	conn   *grpc.ClientConn
+	conn   *grpcpool.ClientConn
 }
 
 type ConnectionPool struct {
@@ -62,7 +62,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 	}
 	pool.currentClient = &grpcClient{
 		broker: pb.NewChainBrokerClient(conn.ClientConn),
-		conn:   conn.ClientConn,
+		conn:   conn,
 	}
 	return pool.currentClient, nil
 }
@@ -113,6 +113,6 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 }
 
 func (grpcCli *grpcClient) available() bool {
-	s := grpcCli.conn.GetState()
+	s := grpcCli.conn.ClientConn.GetState()
 	return s == connectivity.Idle || s == connectivity.Ready
 }

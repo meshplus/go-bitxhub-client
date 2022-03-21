@@ -20,6 +20,11 @@ func (cli *ChainClient) CheckMasterPier(address string) (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	request := &pb.Address{
 		Address: address,
 	}
@@ -39,6 +44,11 @@ func (cli *ChainClient) SetMasterPier(address string, index string, timeout int6
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	request := &pb.PierInfo{
 		Address: address,
 		Index:   index,
@@ -60,6 +70,11 @@ func (cli *ChainClient) HeartBeat(address string, index string) (*pb.Response, e
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	request := &pb.PierInfo{
 		Address: address,
 		Index:   index,
