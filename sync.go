@@ -18,6 +18,11 @@ func (cli *ChainClient) GetBlockHeader(ctx context.Context, begin, end uint64, c
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 
 	syncClient, err := grpcClient.broker.GetBlockHeader(ctx, &pb.GetBlockHeaderRequest{
 		Begin: begin,
@@ -60,7 +65,11 @@ func (cli *ChainClient) GetInterchainTxWrappers(ctx context.Context, pid string,
 	if err != nil {
 		return err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	syncClient, err := grpcClient.broker.GetInterchainTxWrappers(ctx, &pb.GetInterchainTxWrappersRequest{
 		Begin: begin,
 		End:   end,
