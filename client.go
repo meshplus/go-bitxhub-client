@@ -30,6 +30,8 @@ type Client interface {
 	//the transaction hash will be obtained but the transaction receipt is illegal.
 	SendTransaction(tx *pb.BxhTransaction, opts *TransactOpts) (string, error)
 
+	SendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error)
+
 	//Send transaction to BitXHub and get the receipt.
 	SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error)
 
