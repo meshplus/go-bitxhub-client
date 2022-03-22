@@ -65,9 +65,6 @@ func TestChainClient_Subscribe(t *testing.T) {
 			require.Equal(t, true, ok)
 			require.NotNil(t, block)
 
-			if err := cli.Stop(); err != nil {
-				return
-			}
 			return
 		case <-ctx.Done():
 			return

@@ -12,10 +12,12 @@ import (
 const (
 	blockChanNumber = 1024
 	defaultTimeout  = 1 * time.Second
+	defaultPoolSize = 4
 )
 
 type config struct {
 	logger       Logger
+	poolSize     int
 	privateKey   crypto.PrivateKey
 	nodesInfo    []*NodeInfo
 	ipfsAddrs    []string
@@ -63,6 +65,12 @@ func WithTimeoutLimit(limit time.Duration) Option {
 	}
 }
 
+func WithPoolSize(size int) Option {
+	return func(config *config) {
+		config.poolSize = size
+	}
+}
+
 func generateConfig(opts ...Option) (*config, error) {
 	config := &config{}
 	for _, opt := range opts {
@@ -91,6 +99,10 @@ func checkConfig(config *config) error {
 
 	if config.timeoutLimit == 0 {
 		config.timeoutLimit = defaultTimeout
+	}
+
+	if config.poolSize == 0 {
+		config.poolSize = defaultPoolSize
 	}
 
 	// if EnableTLS is set, then tls certs must be provided

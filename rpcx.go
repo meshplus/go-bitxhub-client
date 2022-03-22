@@ -26,7 +26,7 @@ const (
 	GetAccountBalanceTimeout = 2 * time.Second
 	GetTPSTimeout            = 2 * time.Second
 	GetChainIDTimeout        = 2 * time.Second
-	CheckPierTimeout         = 60 * time.Second
+	CheckPierTimeout         = 100 * time.Second
 
 	ACCOUNT_KEY = "account"
 )
@@ -90,6 +90,30 @@ func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) 
 
 var pool *ConnectionPool
 
+func NewWithNoGlobalPool(opts ...Option) (*ChainClient, error) {
+	cfg, err := generateConfig(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	clientPool, err := NewPool(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChainClient{
+		privateKey: cfg.privateKey,
+		logger:     cfg.logger,
+		pool:       clientPool,
+		ipfsClient: ipfsClient,
+	}, nil
+}
+
 func New(opts ...Option) (*ChainClient, error) {
 	cfg, err := generateConfig(opts...)
 	if err != nil {
@@ -117,7 +141,12 @@ func New(opts ...Option) (*ChainClient, error) {
 }
 
 func (cli *ChainClient) Stop() error {
-	return cli.pool.Close()
+	err := cli.pool.Close()
+	if err != nil {
+		return err
+	}
+	cli.pool = nil
+	return nil
 }
 
 func (cli *ChainClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
@@ -237,6 +266,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	if opts == nil {
 		opts = new(TransactOpts)
 		opts.From = tx.From.String() // set default from for opts
+		opts.PrivKey = cli.privateKey
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
@@ -245,6 +275,24 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	ctx, err := cli.SetCtxMetadata(ctx)
 	if err != nil {
 		return "", fmt.Errorf("set ctx metadata err: %v", err)
+	}
+	var nonce uint64
+	if opts.Nonce == 0 {
+		// no nonce set for tx, then use latest nonce from bitxhub
+		nonce, err = cli.GetPendingNonceByAccount(opts.From)
+		if err != nil {
+			return "", fmt.Errorf("%w: failed to retrieve nonce for account %s for %s", ErrBrokenNetwork, opts.From, err.Error())
+		}
+	} else {
+		nonce = opts.Nonce
+	}
+	tx.Nonce = nonce
+
+	if opts.PrivKey == nil {
+		opts.PrivKey = cli.privateKey
+	}
+	if err := tx.Sign(opts.PrivKey); err != nil {
+		return "", fmt.Errorf("%w: for reason %s", ErrSignTx, err.Error())
 	}
 
 	grpcClient, err := cli.pool.getClient()
@@ -258,22 +306,6 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 			}
 		}
 	}()
-	var nonce uint64
-	if opts.Nonce == 0 {
-		// no nonce set for tx, then use latest nonce from bitxhub
-		nonce, err = cli.GetPendingNonceByAccount(opts.From)
-		if err != nil {
-			return "", fmt.Errorf("%w: failed to retrieve nonce for account %s for %s", ErrBrokenNetwork, opts.From, err.Error())
-		}
-	} else {
-		nonce = opts.Nonce
-	}
-	tx.Nonce = nonce
-
-	if err := tx.Sign(cli.privateKey); err != nil {
-		return "", fmt.Errorf("%w: for reason %s", ErrSignTx, err.Error())
-	}
-
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
 		st := status.Convert(err)
@@ -453,7 +485,9 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 	}
 	defer func() {
 		if err := grpcClient.conn.Close(); err != nil {
-			cli.logger.Errorf("close conn err: %s", err)
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
 		}
 	}()
 	res, err := grpcClient.broker.GetPendingNonceByAccount(ctx, &pb.Address{

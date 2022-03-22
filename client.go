@@ -131,6 +131,7 @@ type Client interface {
 }
 
 type TransactOpts struct {
-	From  string
-	Nonce uint64
+	From    string
+	Nonce   uint64
+	PrivKey crypto.PrivateKey
 }
