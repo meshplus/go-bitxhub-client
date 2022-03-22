@@ -128,6 +128,10 @@ func (cli *ChainClient) SendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	return cli.sendTransaction(tx, opts)
 }
 
+func (cli *ChainClient) SendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error) {
+	return cli.sendTransactions(txs)
+}
+
 func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error) {
 	return cli.sendTransactionWithReceipt(tx, opts)
 }
@@ -284,6 +288,40 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	}
 
 	return msg.TxHash, err
+}
+
+func (cli *ChainClient) sendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
+	msg, err := grpcClient.broker.SendTransactions(ctx, txs)
+	if err != nil {
+		st := status.Convert(err)
+		switch st.Code() {
+		case codes.Unknown, codes.Internal:
+			return nil, fmt.Errorf("%w: %s", ErrBrokenNetwork, st.Err().Error())
+		case codes.InvalidArgument:
+			return nil, fmt.Errorf("%w: %s", ErrReconstruct, st.Err().Error())
+		default:
+			return nil, err
+		}
+	}
+	return msg, nil
 }
 
 func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
