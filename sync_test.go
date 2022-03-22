@@ -46,9 +46,6 @@ func TestChainClient_GetBlockHeader(t *testing.T) {
 			require.Equal(t, true, ok)
 
 			require.Equal(t, header.Number, uint64(1))
-			if err := cli.Stop(); err != nil {
-				return
-			}
 			return
 		case <-ctx.Done():
 			return
@@ -117,9 +114,6 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 			require.NotNil(t, wrappers.InterchainTxWrappers[0])
 			wrapper := wrappers.InterchainTxWrappers[0]
 			require.GreaterOrEqual(t, wrapper.Height, meta.Height)
-			if err := cli.Stop(); err != nil {
-				return
-			}
 			return
 		case <-ctx.Done():
 			return

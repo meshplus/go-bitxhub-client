@@ -491,6 +491,21 @@ func (mr *MockClientMockRecorder) SendTransactionWithReceipt(tx, opts interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransactionWithReceipt", reflect.TypeOf((*MockClient)(nil).SendTransactionWithReceipt), tx, opts)
 }
 
+// SendTransactions mocks base method.
+func (m *MockClient) SendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendTransactions", txs)
+	ret0, _ := ret[0].(*pb.MultiTransactionHash)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendTransactions indicates an expected call of SendTransactions.
+func (mr *MockClientMockRecorder) SendTransactions(txs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendTransactions", reflect.TypeOf((*MockClient)(nil).SendTransactions), txs)
+}
+
 // SendView mocks base method.
 func (m *MockClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	m.ctrl.T.Helper()

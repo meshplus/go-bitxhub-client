@@ -40,7 +40,7 @@ func NewPool(config *config) (*ConnectionPool, error) {
 		logger:       config.logger,
 		timeoutLimit: config.timeoutLimit,
 	}
-	grpcPool, err := grpcpool.New(pool.newClient, 1, 16, 1*time.Hour)
+	grpcPool, err := grpcpool.New(pool.newClient, 1, config.poolSize, 1*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -55,9 +55,9 @@ func (pool *ConnectionPool) Close() error {
 }
 
 func (pool *ConnectionPool) getClient() (*grpcClient, error) {
-	if pool.currentClient != nil && pool.currentClient.available() {
-		return pool.currentClient, nil
-	}
+	//if pool.currentClient != nil && pool.currentClient.available() {
+	//	return pool.currentClient, nil
+	//}
 	conn, err := pool.pool.Get(context.Background())
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 			pool.logger.Infof("Dial with addr: %s fail", nodeInfo.Addr)
 			return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, nodeInfo.Addr)
 		}
-		pool.logger.Infof("Establish connection with bitxhub %s successfully, pool is %d pool conn cnt is %s", nodeInfo.Addr, pool.pool.Available(), atomic.AddUint64(&pool.clientCnt, 1))
+		pool.logger.Infof("Establish connection with bitxhub %s successfully, pool is %d pool conn cnt is %d", nodeInfo.Addr, pool.pool.Available(), atomic.AddUint64(&pool.clientCnt, 1))
 		return nil
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.config.nodesInfo)))); err != nil {
 		return nil, err

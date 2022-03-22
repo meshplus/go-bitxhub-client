@@ -54,7 +54,15 @@ func (cli *ChainClient) DeployContract(contract []byte, opts *TransactOpts) (con
 // InvokeContract let client invoke the wasm contract with specific method.
 func (cli *ChainClient) InvokeContract(vmType pb.TransactionData_VMType, address *types.Address, method string,
 	opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error) {
-	from, err := cli.privateKey.PublicKey().Address()
+	pk := cli.privateKey
+	if opts != nil {
+		if opts.PrivKey != nil {
+			pk = opts.PrivKey
+			addr, _ := pk.PublicKey().Address()
+			opts.From = addr.String()
+		}
+	}
+	from, err := pk.PublicKey().Address()
 	if err != nil {
 		return nil, err
 	}
