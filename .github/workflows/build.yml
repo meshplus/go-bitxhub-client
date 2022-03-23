@@ -11,10 +11,10 @@ jobs:
     name: Run golanci-lint
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13
+          go-version: 1.15
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13
+          go-version: 1.15
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
           cd bitxhub && git checkout master
           make prepare
           cd scripts && nohup bash solo.sh &
-          sleep 180
+          sleep 20
 
       - name: Run Unit tests
         run: |
@@ -64,10 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
-      - name: Set up Go 1.13
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.13
+          go-version: 1.15
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
