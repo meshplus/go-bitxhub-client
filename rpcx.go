@@ -141,6 +141,10 @@ func New(opts ...Option) (*ChainClient, error) {
 }
 
 func (cli *ChainClient) Stop() error {
+	if cli.pool.pool.IsClosed() {
+		cli.logger.Warningf("client has been closed")
+		return nil
+	}
 	err := cli.pool.Close()
 	if err != nil {
 		return err
