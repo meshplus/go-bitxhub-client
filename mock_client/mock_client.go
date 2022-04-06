@@ -222,7 +222,7 @@ func (mr *MockClientMockRecorder) GetInterchainTxWrappers(ctx, pid, begin, end, 
 }
 
 // GetMultiSigns mocks base method.
-func (m *MockClient) GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
+func (m *MockClient) GetMultiSigns(id string, typ pb.GetSignsRequest_Type) (*pb.SignResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMultiSigns", id, typ)
 	ret0, _ := ret[0].(*pb.SignResponse)
@@ -309,6 +309,21 @@ func (m *MockClient) GetTransaction(hash string) (*pb.GetTransactionResponse, er
 func (mr *MockClientMockRecorder) GetTransaction(hash interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockClient)(nil).GetTransaction), hash)
+}
+
+// GetTssSigns mocks base method.
+func (m *MockClient) GetTssSigns(id string, typ pb.GetSignsRequest_Type, extra []byte) (*pb.SignResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTssSigns", id, typ, extra)
+	ret0, _ := ret[0].(*pb.SignResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTssSigns indicates an expected call of GetTssSigns.
+func (mr *MockClientMockRecorder) GetTssSigns(id, typ, extra interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTssSigns", reflect.TypeOf((*MockClient)(nil).GetTssSigns), id, typ, extra)
 }
 
 // GetValidators mocks base method.
