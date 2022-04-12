@@ -310,7 +310,7 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	return response, nil
 }
 
-func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error) {
+func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetSignsRequest_Type) (*pb.SignResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendMultiSignsTimeout)
 	defer cancel()
 
@@ -324,9 +324,34 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetMultiSignsReques
 		return nil, err
 	}
 
-	response, err := grpcClient.broker.GetMultiSigns(ctx, &pb.GetMultiSignsRequest{
+	response, err := grpcClient.broker.GetMultiSigns(ctx, &pb.GetSignsRequest{
 		Content: content,
 		Type:    typ,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
+	}
+	return response, nil
+}
+
+func (cli *ChainClient) GetTssSigns(content string, typ pb.GetSignsRequest_Type, extra []byte) (*pb.SignResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendMultiSignsTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := grpcClient.broker.GetTssSigns(ctx, &pb.GetSignsRequest{
+		Content: content,
+		Type:    typ,
+		Extra:   extra,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)

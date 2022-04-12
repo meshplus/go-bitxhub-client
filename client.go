@@ -95,7 +95,10 @@ type Client interface {
 	InvokeXVMContract(address *types.Address, method string, opts *TransactOpts, args ...*pb.Arg) (*pb.Receipt, error)
 
 	// Get BitXHub's signatures specified by id and type.
-	GetMultiSigns(id string, typ pb.GetMultiSignsRequest_Type) (*pb.SignResponse, error)
+	GetMultiSigns(id string, typ pb.GetSignsRequest_Type) (*pb.SignResponse, error)
+
+	// Get BitXHub's tss signatures specified by id and type.
+	GetTssSigns(id string, typ pb.GetSignsRequest_Type, extra []byte) (*pb.SignResponse, error)
 
 	// Get BitXHub TPS during block [begin, end]
 	GetTPS(begin, end uint64) (uint64, error)

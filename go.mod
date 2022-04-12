@@ -8,8 +8,8 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/meshplus/bitxhub-kit v1.2.1-0.20210902085548-07f4fa85bfc9
-	github.com/meshplus/bitxhub-model v1.2.1-0.20211207095229-a43d4b219b66
+	github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d
+	github.com/meshplus/bitxhub-model v1.2.1-0.20220412064024-c35cae241eb2
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/processout/grpc-go-pool v1.2.1
 	github.com/sirupsen/logrus v1.6.0
@@ -22,3 +22,7 @@ require (
 	google.golang.org/grpc v1.33.1
 	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
 )
+
+replace github.com/agl/ed25519 => github.com/binance-chain/edwards25519 v0.0.0-20200305024217-f36fc4b53d43
+
+replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
