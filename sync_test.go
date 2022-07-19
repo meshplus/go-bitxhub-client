@@ -201,6 +201,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		"RegisterAppchain", nil,
 		pb.String(appchain0), // id
 		String(appchain0),    // name
+		pb.Bytes([]byte("")),
 		String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),
@@ -224,6 +225,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		"RegisterAppchain", nil,
 		pb.String(appchain1),
 		pb.String(appchain1),
+		pb.Bytes([]byte("")),
 		pb.String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),

@@ -152,6 +152,7 @@ func registerAppchain(t *testing.T, adminCli1, adminCli2, adminCli3, appchainCLi
 	r, err := appchainCLi.InvokeBVMContract(constant.AppchainMgrContractAddr.Address(), "RegisterAppchain", nil,
 		String(chainID),
 		String(chainName),
+		Bytes(nil),
 		String("ETH"),
 		Bytes(nil),
 		String("broker"),
