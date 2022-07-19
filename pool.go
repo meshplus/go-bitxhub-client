@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rican7/retry"
@@ -20,7 +21,7 @@ import (
 
 type grpcClient struct {
 	broker pb.ChainBrokerClient
-	conn   *grpc.ClientConn
+	conn   *grpcpool.ClientConn
 }
 
 type ConnectionPool struct {
@@ -29,6 +30,7 @@ type ConnectionPool struct {
 	currentClient *grpcClient
 	logger        Logger
 	config        *config
+	clientCnt     uint64
 }
 
 // init a connection
@@ -38,7 +40,7 @@ func NewPool(config *config) (*ConnectionPool, error) {
 		logger:       config.logger,
 		timeoutLimit: config.timeoutLimit,
 	}
-	grpcPool, err := grpcpool.New(pool.newClient, 1, 16, 1*time.Hour)
+	grpcPool, err := grpcpool.New(pool.newClient, 1, config.poolSize, 1*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -53,16 +55,16 @@ func (pool *ConnectionPool) Close() error {
 }
 
 func (pool *ConnectionPool) getClient() (*grpcClient, error) {
-	if pool.currentClient != nil && pool.currentClient.available() {
-		return pool.currentClient, nil
-	}
+	//if pool.currentClient != nil && pool.currentClient.available() {
+	//	return pool.currentClient, nil
+	//}
 	conn, err := pool.pool.Get(context.Background())
 	if err != nil {
 		return nil, err
 	}
 	pool.currentClient = &grpcClient{
 		broker: pb.NewChainBrokerClient(conn.ClientConn),
-		conn:   conn.ClientConn,
+		conn:   conn,
 	}
 	return pool.currentClient, nil
 }
@@ -101,10 +103,10 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 		var err error
 		conn, err = grpc.Dial(nodeInfo.Addr, opts...)
 		if err != nil {
-			pool.logger.Debugf("Dial with addr: %s fail", nodeInfo.Addr)
+			pool.logger.Infof("Dial with addr: %s fail", nodeInfo.Addr)
 			return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, nodeInfo.Addr)
 		}
-		pool.logger.Debugf("Establish connection with bitxhub %s successfully, pool is %d", nodeInfo.Addr, pool.pool.Available())
+		pool.logger.Debugf("Establish connection with bitxhub %s successfully, pool is %d pool conn cnt is %d", nodeInfo.Addr, pool.pool.Available(), atomic.AddUint64(&pool.clientCnt, 1))
 		return nil
 	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.config.nodesInfo)))); err != nil {
 		return nil, err
@@ -113,6 +115,9 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 }
 
 func (grpcCli *grpcClient) available() bool {
-	s := grpcCli.conn.GetState()
+	if grpcCli.conn.ClientConn == nil {
+		return false
+	}
+	s := grpcCli.conn.ClientConn.GetState()
 	return s == connectivity.Idle || s == connectivity.Ready
 }

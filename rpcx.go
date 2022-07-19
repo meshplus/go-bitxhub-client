@@ -12,6 +12,7 @@ import (
 	"github.com/Rican7/retry/strategy"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-model/pb"
+	grpcpool "github.com/processout/grpc-go-pool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -25,7 +26,7 @@ const (
 	GetAccountBalanceTimeout = 2 * time.Second
 	GetTPSTimeout            = 2 * time.Second
 	GetChainIDTimeout        = 2 * time.Second
-	CheckPierTimeout         = 60 * time.Second
+	CheckPierTimeout         = 100 * time.Second
 
 	ACCOUNT_KEY = "account"
 )
@@ -79,7 +80,38 @@ func (cli *ChainClient) GetAccountBalance(address string) (*pb.Response, error) 
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	return response, nil
+}
+
+var pool *ConnectionPool
+
+func NewWithNoGlobalPool(opts ...Option) (*ChainClient, error) {
+	cfg, err := generateConfig(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	clientPool, err := NewPool(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChainClient{
+		privateKey: cfg.privateKey,
+		logger:     cfg.logger,
+		pool:       clientPool,
+		ipfsClient: ipfsClient,
+	}, nil
 }
 
 func New(opts ...Option) (*ChainClient, error) {
@@ -88,9 +120,11 @@ func New(opts ...Option) (*ChainClient, error) {
 		return nil, err
 	}
 
-	pool, err := NewPool(cfg)
-	if err != nil {
-		return nil, err
+	if pool == nil {
+		pool, err = NewPool(cfg)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
@@ -107,7 +141,16 @@ func New(opts ...Option) (*ChainClient, error) {
 }
 
 func (cli *ChainClient) Stop() error {
-	return cli.pool.Close()
+	if cli.pool.pool.IsClosed() {
+		cli.logger.Warningf("client has been closed")
+		return nil
+	}
+	err := cli.pool.Close()
+	if err != nil {
+		return err
+	}
+	cli.pool = nil
+	return nil
 }
 
 func (cli *ChainClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
@@ -116,6 +159,10 @@ func (cli *ChainClient) SendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 
 func (cli *ChainClient) SendTransaction(tx *pb.BxhTransaction, opts *TransactOpts) (string, error) {
 	return cli.sendTransaction(tx, opts)
+}
+
+func (cli *ChainClient) SendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error) {
+	return cli.sendTransactions(txs)
 }
 
 func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error) {
@@ -160,6 +207,11 @@ func (cli *ChainClient) GetTransaction(hash string) (*pb.GetTransactionResponse,
 		return nil, err
 	}
 
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetTransaction(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
@@ -186,7 +238,11 @@ func (cli *ChainClient) GetChainMeta() (*pb.ChainMeta, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetChainMeta(ctx, &pb.Request{})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
@@ -214,6 +270,7 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	if opts == nil {
 		opts = new(TransactOpts)
 		opts.From = tx.From.String() // set default from for opts
+		opts.PrivKey = cli.privateKey
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
@@ -223,12 +280,6 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	if err != nil {
 		return "", fmt.Errorf("set ctx metadata err: %v", err)
 	}
-
-	grpcClient, err := cli.pool.getClient()
-	if err != nil {
-		return "", err
-	}
-
 	var nonce uint64
 	if opts.Nonce == 0 {
 		// no nonce set for tx, then use latest nonce from bitxhub
@@ -241,10 +292,24 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	}
 	tx.Nonce = nonce
 
-	if err := tx.Sign(cli.privateKey); err != nil {
+	if opts.PrivKey == nil {
+		opts.PrivKey = cli.privateKey
+	}
+	if err := tx.Sign(opts.PrivKey); err != nil {
 		return "", fmt.Errorf("%w: for reason %s", ErrSignTx, err.Error())
 	}
 
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
 	msg, err := grpcClient.broker.SendTransaction(ctx, tx)
 	if err != nil {
 		st := status.Convert(err)
@@ -261,6 +326,40 @@ func (cli *ChainClient) sendTransaction(tx *pb.BxhTransaction, opts *TransactOpt
 	return msg.TxHash, err
 }
 
+func (cli *ChainClient) sendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+	grpcClient, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
+	msg, err := grpcClient.broker.SendTransactions(ctx, txs)
+	if err != nil {
+		st := status.Convert(err)
+		switch st.Code() {
+		case codes.Unknown, codes.Internal:
+			return nil, fmt.Errorf("%w: %s", ErrBrokenNetwork, st.Err().Error())
+		case codes.InvalidArgument:
+			return nil, fmt.Errorf("%w: %s", ErrReconstruct, st.Err().Error())
+		default:
+			return nil, err
+		}
+	}
+	return msg, nil
+}
+
 func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
 	defer cancel()
@@ -274,7 +373,11 @@ func (cli *ChainClient) sendView(tx *pb.BxhTransaction) (*pb.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	if err := tx.Sign(cli.privateKey); err != nil {
 		return nil, fmt.Errorf("tx sign: %w", err)
 	}
@@ -300,7 +403,11 @@ func (cli *ChainClient) getReceipt(hash string) (*pb.Receipt, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetReceipt(ctx, &pb.TransactionHashMsg{
 		TxHash: hash,
 	})
@@ -323,7 +430,11 @@ func (cli *ChainClient) GetMultiSigns(content string, typ pb.GetSignsRequest_Typ
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetMultiSigns(ctx, &pb.GetSignsRequest{
 		Content: content,
 		Type:    typ,
@@ -347,7 +458,11 @@ func (cli *ChainClient) GetTssSigns(content string, typ pb.GetSignsRequest_Type,
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetTssSigns(ctx, &pb.GetSignsRequest{
 		Content: content,
 		Type:    typ,
@@ -372,7 +487,13 @@ func (cli *ChainClient) GetPendingNonceByAccount(account string) (uint64, error)
 	if err != nil {
 		return 0, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
 	res, err := grpcClient.broker.GetPendingNonceByAccount(ctx, &pb.Address{
 		Address: account,
 	})
@@ -399,7 +520,11 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	resp, err := grpcClient.broker.GetTPS(ctx, &pb.GetTPSRequest{
 		Begin: begin,
 		End:   end,
@@ -429,7 +554,11 @@ func (cli *ChainClient) GetChainID() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	resp, err := grpcClient.broker.GetChainID(ctx, &pb.Empty{})
 
 	if err != nil {

@@ -46,9 +46,6 @@ func TestChainClient_GetBlockHeader(t *testing.T) {
 			require.Equal(t, true, ok)
 
 			require.Equal(t, header.Number, uint64(1))
-			if err := cli.Stop(); err != nil {
-				return
-			}
 			return
 		case <-ctx.Done():
 			return
@@ -117,9 +114,6 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 			require.NotNil(t, wrappers.InterchainTxWrappers[0])
 			wrapper := wrappers.InterchainTxWrappers[0]
 			require.GreaterOrEqual(t, wrapper.Height, meta.Height)
-			if err := cli.Stop(); err != nil {
-				return
-			}
 			return
 		case <-ctx.Done():
 			return
@@ -207,6 +201,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		"RegisterAppchain", nil,
 		pb.String(appchain0), // id
 		String(appchain0),    // name
+		pb.Bytes([]byte("")),
 		String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),
@@ -230,6 +225,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 		"RegisterAppchain", nil,
 		pb.String(appchain1),
 		pb.String(appchain1),
+		pb.Bytes([]byte("")),
 		pb.String("ETH"),
 		Bytes(validators),
 		String("brokerAddr"),

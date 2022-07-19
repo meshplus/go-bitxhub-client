@@ -17,7 +17,11 @@ func (cli *ChainClient) SubscribeAudit(ctx context.Context, typ pb.AuditSubscrip
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	from, err := cli.privateKey.PublicKey().Address()
 	if err != nil {
 		return nil, err

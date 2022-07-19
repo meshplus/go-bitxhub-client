@@ -82,10 +82,6 @@ func TestChainClient_SendTransactionWithReceipt(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, hash, ret.TxHash.String())
-
-	err = cli.Stop()
-	require.Nil(t, err)
-	fmt.Println(ret.TxHash.String())
 }
 
 func TestChainClient_SendView(t *testing.T) {
@@ -146,9 +142,6 @@ func TestChainClient_SendView(t *testing.T) {
 	receipt, err = cli.SendView(view)
 	require.Nil(t, err)
 	require.Equal(t, value, string(receipt.Ret))
-
-	err = cli.Stop()
-	require.Nil(t, err)
 }
 
 func TestChainClient_GetTransaction(t *testing.T) {

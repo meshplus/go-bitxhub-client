@@ -28,6 +28,11 @@ func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksRespon
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	request := &pb.GetBlocksRequest{
 		Start: start,
 		End:   end,
@@ -52,6 +57,11 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	request := &pb.GetBlockRequest{
 		Type:  blockType,
 		Value: value,
@@ -76,6 +86,11 @@ func (cli *ChainClient) GetChainStatus() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_CHAIN_STATUS})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)

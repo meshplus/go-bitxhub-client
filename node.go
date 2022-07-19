@@ -25,6 +25,11 @@ func (cli *ChainClient) GetValidators() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_VALIDATORS})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
@@ -45,6 +50,11 @@ func (cli *ChainClient) GetNetworkMeta() (*pb.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	response, err := grpcClient.broker.GetInfo(ctx, &pb.Request{Type: pb.Request_NETWORK})
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)

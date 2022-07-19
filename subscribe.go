@@ -17,7 +17,11 @@ func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionReques
 	if err != nil {
 		return nil, err
 	}
-
+	defer func() {
+		if err := grpcClient.conn.Close(); err != nil {
+			cli.logger.Errorf("close conn err: %s", err)
+		}
+	}()
 	req := &pb.SubscriptionRequest{
 		Type:  typ,
 		Extra: extra,
