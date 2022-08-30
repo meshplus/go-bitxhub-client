@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/meshplus/bitxhub-model/pb"
+	_ "github.com/meshplus/eth-kit/types"
 )
 
 func (cli *ChainClient) Subscribe(ctx context.Context, typ pb.SubscriptionRequest_Type, extra []byte) (<-chan interface{}, error) {
