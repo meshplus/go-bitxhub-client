@@ -8,7 +8,7 @@ require (
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d
 	github.com/meshplus/bitxhub-model v1.2.1-0.20220412064024-c35cae241eb2
-	github.com/meshplus/eth-kit v0.0.0-20220628081546-b5a85face78c
+	github.com/meshplus/eth-kit v0.0.0-20221011053504-8e067cb076ae
 	github.com/processout/grpc-go-pool v1.2.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

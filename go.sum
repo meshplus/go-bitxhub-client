@@ -514,8 +514,8 @@ github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d/go.mod h1:w
 github.com/meshplus/bitxhub-model v1.2.1-0.20210805020100-41c27414badf/go.mod h1:IjgoQrsn1wthW7XcKRqgaZqCSlqNy0SBwF/7lmGSqXc=
 github.com/meshplus/bitxhub-model v1.2.1-0.20220412064024-c35cae241eb2 h1:4MCVzq5C98z8l3aHqJhuiRok/yhnsG3incYxqvxW3jQ=
 github.com/meshplus/bitxhub-model v1.2.1-0.20220412064024-c35cae241eb2/go.mod h1:sPko8fD+G3MYOnH/44Ju4T4jD/tlEU3IJDIJ4hjrzxg=
-github.com/meshplus/eth-kit v0.0.0-20220628081546-b5a85face78c h1:iFbSvCorWwD2QUD9esv8KECuCIYKiNrvj1PyeCyFb9s=
-github.com/meshplus/eth-kit v0.0.0-20220628081546-b5a85face78c/go.mod h1:7Uf2QyUOCFCHjg4zXr3ZtjKesdPubptdr4IK0KiQBHY=
+github.com/meshplus/eth-kit v0.0.0-20221011053504-8e067cb076ae h1:CSWCu/LzyaBz2jav4Sfwv1bg4kKa+hBIF8CGCi7CPRw=
+github.com/meshplus/eth-kit v0.0.0-20221011053504-8e067cb076ae/go.mod h1:7Uf2QyUOCFCHjg4zXr3ZtjKesdPubptdr4IK0KiQBHY=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.12/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
