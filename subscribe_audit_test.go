@@ -37,6 +37,8 @@ func TestChainClient_SubscribeAudit(t *testing.T) {
 	_, err = nodeCli.GetChainStatus()
 	require.NotNil(t, err)
 
+	updateAppchain(t, adminCli1, adminCli2, adminCli3, appchainCli, appchainID, appchainID, appchainAdminAddr)
+
 	for {
 		select {
 		case infoData, ok := <-c:
@@ -180,6 +182,22 @@ func registerNode(t *testing.T, adminCli1, adminCli2, adminCli3 *ChainClient, no
 		String("reason"),
 	)
 	require.Nil(t, err)
+	require.Nil(t, err)
+	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
+	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
+
+	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
+}
+
+func updateAppchain(t *testing.T, adminCli1, adminCli2, adminCli3, appchainCLi *ChainClient, chainID, chainName, appchainAdmin string) {
+	r, err := appchainCLi.InvokeBVMContract(constant.AppchainMgrContractAddr.Address(), "UpdateAppchain", nil,
+		String(chainID),
+		String(chainName+"111"),
+		String("desc"),
+		Bytes(nil),
+		String(appchainAdmin),
+		String("reason"),
+	)
 	require.Nil(t, err)
 	require.Equal(t, true, r.IsSuccess(), string(r.Ret))
 	proposalId := gjson.Get(string(r.Ret), "proposal_id").String()
