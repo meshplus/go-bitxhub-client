@@ -14,9 +14,9 @@ import (
 func TestChainClient_GetBlock(t *testing.T) {
 	cli, err := Cli()
 	require.Nil(t, err)
-	block, err := cli.GetBlock("1", pb.GetBlockRequest_HEIGHT)
+	block, err := cli.GetBlock("", pb.GetBlockRequest_LATEST, false)
 	require.Nil(t, err)
-	require.Equal(t, block.BlockHeader.Number, uint64(1))
+	require.NotNil(t, block)
 }
 
 func TestChainClient_GetChainStatus(t *testing.T) {
@@ -30,7 +30,7 @@ func TestChainClient_GetChainStatus(t *testing.T) {
 func TestChainClient_GetBlocks(t *testing.T) {
 	cli, err := Cli()
 	require.Nil(t, err)
-	blocks, err := cli.GetBlocks(1, 1)
+	blocks, err := cli.GetBlocks(1, 1, false)
 	require.Nil(t, err)
 	require.Equal(t, len(blocks.Blocks), 1)
 }

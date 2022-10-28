@@ -26,11 +26,11 @@ func TestChainClient_SubscribeAudit(t *testing.T) {
 	require.Nil(t, err)
 
 	// GetBlocks
-	_, err = nodeCli.GetBlocks(1, 1)
+	_, err = nodeCli.GetBlocks(1, 1, false)
 	require.NotNil(t, err)
 
 	// GetBlock
-	_, err = nodeCli.GetBlock("1", pb.GetBlockRequest_HEIGHT)
+	_, err = nodeCli.GetBlock("1", pb.GetBlockRequest_HEIGHT, false)
 	require.NotNil(t, err)
 
 	// GetChainStatus

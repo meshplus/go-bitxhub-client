@@ -119,18 +119,18 @@ func (mr *MockClientMockRecorder) GetAccountBalance(address interface{}) *gomock
 }
 
 // GetBlock mocks base method.
-func (m *MockClient) GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error) {
+func (m *MockClient) GetBlock(value string, blockType pb.GetBlockRequest_Type, fullTx bool) (*pb.Block, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBlock", value, blockType)
+	ret := m.ctrl.Call(m, "GetBlock", value, blockType, fullTx)
 	ret0, _ := ret[0].(*pb.Block)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBlock indicates an expected call of GetBlock.
-func (mr *MockClientMockRecorder) GetBlock(value, blockType interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetBlock(value, blockType, fullTx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlock", reflect.TypeOf((*MockClient)(nil).GetBlock), value, blockType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlock", reflect.TypeOf((*MockClient)(nil).GetBlock), value, blockType, fullTx)
 }
 
 // GetBlockHeader mocks base method.
@@ -148,18 +148,18 @@ func (mr *MockClientMockRecorder) GetBlockHeader(ctx, begin, end, ch interface{}
 }
 
 // GetBlocks mocks base method.
-func (m *MockClient) GetBlocks(start, end uint64) (*pb.GetBlocksResponse, error) {
+func (m *MockClient) GetBlocks(start, end uint64, fullTx bool) (*pb.GetBlocksResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBlocks", start, end)
+	ret := m.ctrl.Call(m, "GetBlocks", start, end, fullTx)
 	ret0, _ := ret[0].(*pb.GetBlocksResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBlocks indicates an expected call of GetBlocks.
-func (mr *MockClientMockRecorder) GetBlocks(start, end interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetBlocks(start, end, fullTx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), start, end)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocks", reflect.TypeOf((*MockClient)(nil).GetBlocks), start, end, fullTx)
 }
 
 // GetChainID mocks base method.
@@ -311,6 +311,36 @@ func (mr *MockClientMockRecorder) GetTransaction(hash interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransaction", reflect.TypeOf((*MockClient)(nil).GetTransaction), hash)
 }
 
+// GetTransactionByBlockHashAndIndex mocks base method.
+func (m *MockClient) GetTransactionByBlockHashAndIndex(blockHash string, index uint64) (*pb.GetTransactionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTransactionByBlockHashAndIndex", blockHash, index)
+	ret0, _ := ret[0].(*pb.GetTransactionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTransactionByBlockHashAndIndex indicates an expected call of GetTransactionByBlockHashAndIndex.
+func (mr *MockClientMockRecorder) GetTransactionByBlockHashAndIndex(blockHash, index interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactionByBlockHashAndIndex", reflect.TypeOf((*MockClient)(nil).GetTransactionByBlockHashAndIndex), blockHash, index)
+}
+
+// GetTransactionByBlockNumberAndIndex mocks base method.
+func (m *MockClient) GetTransactionByBlockNumberAndIndex(blockNum, index uint64) (*pb.GetTransactionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTransactionByBlockNumberAndIndex", blockNum, index)
+	ret0, _ := ret[0].(*pb.GetTransactionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTransactionByBlockNumberAndIndex indicates an expected call of GetTransactionByBlockNumberAndIndex.
+func (mr *MockClientMockRecorder) GetTransactionByBlockNumberAndIndex(blockNum, index interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransactionByBlockNumberAndIndex", reflect.TypeOf((*MockClient)(nil).GetTransactionByBlockNumberAndIndex), blockNum, index)
+}
+
 // GetTssSigns mocks base method.
 func (m *MockClient) GetTssSigns(id string, typ pb.GetSignsRequest_Type, extra []byte) (*pb.SignResponse, error) {
 	m.ctrl.T.Helper()
@@ -459,6 +489,36 @@ func (mr *MockClientMockRecorder) InvokeXVMContract(address, method, opts interf
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{address, method, opts}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeXVMContract", reflect.TypeOf((*MockClient)(nil).InvokeXVMContract), varargs...)
+}
+
+// SendRawTransaction mocks base method.
+func (m *MockClient) SendRawTransaction(tx *pb.BxhTransaction) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendRawTransaction", tx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendRawTransaction indicates an expected call of SendRawTransaction.
+func (mr *MockClientMockRecorder) SendRawTransaction(tx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRawTransaction", reflect.TypeOf((*MockClient)(nil).SendRawTransaction), tx)
+}
+
+// SendRawTransactionWithReceipt mocks base method.
+func (m *MockClient) SendRawTransactionWithReceipt(tx *pb.BxhTransaction) (*pb.Receipt, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendRawTransactionWithReceipt", tx)
+	ret0, _ := ret[0].(*pb.Receipt)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendRawTransactionWithReceipt indicates an expected call of SendRawTransactionWithReceipt.
+func (mr *MockClientMockRecorder) SendRawTransactionWithReceipt(tx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendRawTransactionWithReceipt", reflect.TypeOf((*MockClient)(nil).SendRawTransactionWithReceipt), tx)
 }
 
 // SendTransaction mocks base method.

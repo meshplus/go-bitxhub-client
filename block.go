@@ -15,7 +15,7 @@ const (
 	GetBlockTimeout  = 10 * time.Second
 )
 
-func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error) {
+func (cli *ChainClient) GetBlocks(start uint64, end uint64, fullTx bool) (*pb.GetBlocksResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetBlocksTimeout)
 	defer cancel()
 
@@ -34,8 +34,9 @@ func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksRespon
 		}
 	}()
 	request := &pb.GetBlocksRequest{
-		Start: start,
-		End:   end,
+		Start:  start,
+		End:    end,
+		FullTx: fullTx,
 	}
 	response, err := grpcClient.broker.GetBlocks(ctx, request)
 	if err != nil {
@@ -44,7 +45,7 @@ func (cli *ChainClient) GetBlocks(start uint64, end uint64) (*pb.GetBlocksRespon
 	return response, nil
 }
 
-func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error) {
+func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type, fullTx bool) (*pb.Block, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GetBlockTimeout)
 	defer cancel()
 
@@ -63,8 +64,9 @@ func (cli *ChainClient) GetBlock(value string, blockType pb.GetBlockRequest_Type
 		}
 	}()
 	request := &pb.GetBlockRequest{
-		Type:  blockType,
-		Value: value,
+		Type:   blockType,
+		Value:  value,
+		FullTx: fullTx,
 	}
 	response, err := grpcClient.broker.GetBlock(ctx, request)
 	if err != nil {

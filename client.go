@@ -32,8 +32,12 @@ type Client interface {
 
 	SendTransactions(txs *pb.MultiTransaction) (*pb.MultiTransactionHash, error)
 
+	SendRawTransaction(tx *pb.BxhTransaction) (string, error)
+
 	//Send transaction to BitXHub and get the receipt.
 	SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *TransactOpts) (*pb.Receipt, error)
+
+	SendRawTransactionWithReceipt(tx *pb.BxhTransaction) (*pb.Receipt, error)
 
 	//Get the receipt by transaction hash,
 	//the status of the receipt is a sign of whether the transaction is successful.
@@ -42,16 +46,20 @@ type Client interface {
 	//Get transaction from BitXHub by transaction hash.
 	GetTransaction(hash string) (*pb.GetTransactionResponse, error)
 
+	GetTransactionByBlockHashAndIndex(blockHash string, index uint64) (*pb.GetTransactionResponse, error)
+
+	GetTransactionByBlockNumberAndIndex(blockNum uint64, index uint64) (*pb.GetTransactionResponse, error)
+
 	//Get the current blockchain situation of BitXHub.
 	GetChainMeta() (*pb.ChainMeta, error)
 
 	//Get blocks of the specified block height range.
-	GetBlocks(start uint64, end uint64) (*pb.GetBlocksResponse, error)
+	GetBlocks(start uint64, end uint64, fullTx bool) (*pb.GetBlocksResponse, error)
 
 	//Obtain block information from BitXHub.
 	//The block header contains the basic information of the block,
 	//and the block body contains all the transactions packaged.
-	GetBlock(value string, blockType pb.GetBlockRequest_Type) (*pb.Block, error)
+	GetBlock(value string, blockType pb.GetBlockRequest_Type, fullTx bool) (*pb.Block, error)
 
 	//Get the status of the blockchain from BitXHub, normal or abnormal.
 	GetChainStatus() (*pb.Response, error)

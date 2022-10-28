@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/Rican7/retry/backoff"
 	"github.com/Rican7/retry/strategy"
 	"github.com/meshplus/bitxhub-kit/crypto"
+	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/pb"
 	grpcpool "github.com/processout/grpc-go-pool"
 	"google.golang.org/grpc/codes"
@@ -38,6 +40,13 @@ type Interchain struct {
 	SourceReceiptCounter map[string]uint64 `json:"source_receipt_counter,omitempty"`
 }
 
+type Account struct {
+	Type          string     `json:"type"`
+	Balance       *big.Int   `json:"balance"`
+	ContractCount uint64     `json:"contract_count"`
+	CodeHash      types.Hash `json:"code_hash"`
+}
+
 var _ Client = (*ChainClient)(nil)
 
 type ChainClient struct {
@@ -47,6 +56,117 @@ type ChainClient struct {
 	ipfsClient  *IPFSClient
 	normalSeqNo int64
 	ibtpSeqNo   int64
+}
+
+func (cli *ChainClient) GetTransactionByBlockHashAndIndex(blockHash string, index uint64) (*pb.GetTransactionResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
+	client, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
+	request := &pb.TransactionBlockHashAndIndexMsg{
+		BlockHash: blockHash,
+		Index:     index,
+	}
+	msg, err := client.broker.GetTransactionByBlockHashAndIndex(ctx, request)
+	return msg, err
+}
+
+func (cli *ChainClient) GetTransactionByBlockNumberAndIndex(blockNum uint64, index uint64) (*pb.GetTransactionResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
+	client, err := cli.pool.getClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
+	request := &pb.TransactionBlockNumberAndIndexMsg{
+		BlockNumber: blockNum,
+		Index:       index,
+	}
+	msg, err := client.broker.GetTransactionByBlockNumberAndIndex(ctx, request)
+	return msg, err
+}
+
+// SendRawTransaction send signed transaction
+func (cli *ChainClient) SendRawTransaction(tx *pb.BxhTransaction) (string, error) {
+	return cli.sendRawTransaction(tx)
+}
+
+func (cli *ChainClient) sendRawTransaction(tx *pb.BxhTransaction) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), SendTransactionTimeout)
+	defer cancel()
+
+	ctx, err := cli.SetCtxMetadata(ctx)
+	if err != nil {
+		return "", fmt.Errorf("set ctx metadata err: %v", err)
+	}
+
+	client, err := cli.pool.getClient()
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err = client.conn.Close(); err != nil {
+			if err != grpcpool.ErrAlreadyClosed {
+				cli.logger.Errorf("close conn err: %s", err)
+			}
+		}
+	}()
+	msg, err := client.broker.SendTransaction(ctx, tx)
+	if err != nil {
+		st := status.Convert(err)
+		switch st.Code() {
+		case codes.Unknown, codes.Internal:
+			return "", fmt.Errorf("%w: %s", ErrBrokenNetwork, st.Err().Error())
+		case codes.InvalidArgument:
+			return "", fmt.Errorf("%w: %s", ErrReconstruct, st.Err().Error())
+		default:
+			return "", err
+		}
+	}
+
+	return msg.TxHash, err
+}
+
+// SendRawTransactionWithReceipt send signed transaction with receipt
+func (cli *ChainClient) SendRawTransactionWithReceipt(tx *pb.BxhTransaction) (*pb.Receipt, error) {
+	txHash, err := cli.sendRawTransaction(tx)
+	if err != nil {
+		return nil, fmt.Errorf("send tx error: %w", err)
+	}
+
+	receipt, err := cli.GetReceipt(txHash)
+	if err != nil {
+		return nil, err
+	}
+	return receipt, nil
 }
 
 func (cli *ChainClient) SetCtxMetadata(ctx context.Context) (context.Context, error) {
