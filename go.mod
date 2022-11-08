@@ -4,16 +4,17 @@ go 1.18
 
 require (
 	github.com/Rican7/retry v0.1.0
-	github.com/golang/mock v1.4.3
+	github.com/ethereum/go-ethereum v1.10.8
+	github.com/golang/mock v1.6.0
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d
-	github.com/meshplus/bitxhub-model v1.2.1-0.20220412064024-c35cae241eb2
-	github.com/meshplus/eth-kit v0.0.0-20221011053504-8e067cb076ae
+	github.com/meshplus/bitxhub-model v1.2.1-0.20221031060115-cd3292575517
+	github.com/meshplus/eth-kit v0.0.0-20221028095005-bdda18e64555
 	github.com/processout/grpc-go-pool v1.2.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.0
 	github.com/tidwall/gjson v1.6.8
-	google.golang.org/grpc v1.33.1
+	google.golang.org/grpc v1.50.1
 )
 
 require (
@@ -21,13 +22,11 @@ require (
 	github.com/cbergoon/merkletree v0.2.0 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ethereum/go-ethereum v1.10.8 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/ipfs/go-cid v0.0.7 // indirect
 	github.com/ipfs/go-ipfs-files v0.0.8 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.2.0+incompatible // indirect
 	github.com/lestrrat-go/strftime v1.0.0 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
@@ -53,16 +52,18 @@ require (
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c // indirect
-	go.opencensus.io v0.22.4 // indirect
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
-	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
-	golang.org/x/text v0.3.6 // indirect
-	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
+	go.opencensus.io v0.23.0 // indirect
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+	golang.org/x/text v0.3.8 // indirect
+	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/agl/ed25519 => github.com/binance-chain/edwards25519 v0.0.0-20200305024217-f36fc4b53d43
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+
+replace google.golang.org/grpc => google.golang.org/grpc v1.33.0

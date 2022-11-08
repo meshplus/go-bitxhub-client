@@ -1,18 +1,28 @@
 package rpcx
 
 import (
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"path/filepath"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/meshplus/bitxhub-kit/crypto"
 	"github.com/meshplus/bitxhub-kit/crypto/asym"
 	"github.com/meshplus/bitxhub-kit/types"
 	"github.com/meshplus/bitxhub-model/pb"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	ErrBalance = "insufficient balance"
+	keyFile    = "key.json"
 )
 
 var (
@@ -171,23 +181,93 @@ func TestChainClient_GetTransaction(t *testing.T) {
 	payload, err := data.Marshal()
 	require.Nil(t, err)
 
-	tx := &pb.BxhTransaction{
+	expectedTx := &pb.BxhTransaction{
 		From:      from,
 		To:        to,
 		Payload:   payload,
 		Timestamp: time.Now().UnixNano(),
 	}
+	failReceipt, err := cli.SendTransactionWithReceipt(expectedTx, nil)
+	require.Nil(t, err)
+	require.True(t, strings.Contains(string(failReceipt.GetRet()), ErrBalance), string(failReceipt.GetRet()))
 
-	err = tx.Sign(privKey)
+	// make sure account have sufficient balance
+	err = transferFromAdmin(cli, from, defaultBalance)
 	require.Nil(t, err)
 
-	receipt, err := cli.SendTransactionWithReceipt(tx, nil)
+	receipt, err := cli.SendTransactionWithReceipt(expectedTx, nil)
 	require.Nil(t, err)
-	//require.True(t, strings.Contains(string(receipt.GetRet()), "insufficeient balance"), string(receipt.GetRet()))
 
-	txx, err := cli.GetTransaction(receipt.TxHash.String())
-	require.Nil(t, err)
-	require.Equal(t, tx.SignHash(), txx.Tx.SignHash())
+	t.Run("GetTransaction", func(t *testing.T) {
+		actualTx, err := cli.GetTransaction(receipt.TxHash.String())
+		require.Nil(t, err)
+		require.Equal(t, expectedTx.SignHash(), actualTx.Tx.SignHash())
+	})
+
+	t.Run("GetTransactionByBlockHashAndIndex", func(t *testing.T) {
+		tx, err := cli.GetTransaction(receipt.TxHash.String())
+		require.Nil(t, err)
+		meta := tx.GetTxMeta()
+		actualTx, err := cli.GetTransactionByBlockHashAndIndex(common.BytesToHash(meta.BlockHash).String(), meta.Index)
+		require.Nil(t, err)
+		require.Equal(t, expectedTx.SignHash(), actualTx.Tx.SignHash())
+
+	})
+
+	t.Run("GetTransactionByBlockNumberAndIndex", func(t *testing.T) {
+		tx, err := cli.GetTransaction(receipt.TxHash.String())
+		require.Nil(t, err)
+		meta := tx.GetTxMeta()
+		actualTx, err := cli.GetTransactionByBlockNumberAndIndex(meta.BlockHeight, meta.Index)
+		require.Nil(t, err)
+		require.Equal(t, expectedTx.SignHash(), actualTx.Tx.SignHash())
+	})
+}
+
+func transferFromAdmin(client *ChainClient, address *types.Address, amount string) error {
+	keyPath := filepath.Join("testdata/node1", keyFile)
+	adminPrivKey, err := asym.RestorePrivateKey(keyPath, keyPassword)
+	if err != nil {
+		return err
+	}
+
+	adminFrom, err := adminPrivKey.PublicKey().Address()
+	if err != nil {
+		return err
+	}
+
+	data := &pb.TransactionData{
+		Amount: amount,
+	}
+	payload, err := data.Marshal()
+	if err != nil {
+		return err
+	}
+
+	tx := &pb.BxhTransaction{
+		From:      adminFrom,
+		To:        address,
+		Timestamp: time.Now().UnixNano(),
+		Payload:   payload,
+	}
+
+	adminNonce, err := client.GetPendingNonceByAccount(adminFrom.String())
+	if err != nil {
+		return err
+	}
+
+	ret, err := client.SendTransactionWithReceipt(tx, &TransactOpts{
+		From:    adminFrom.String(),
+		Nonce:   atomic.AddUint64(&adminNonce, 1) - 1,
+		PrivKey: adminPrivKey,
+	})
+	if err != nil {
+		return err
+	}
+	if ret.Status != pb.Receipt_SUCCESS {
+		return fmt.Errorf(string(ret.Ret))
+	}
+	return nil
 }
 
 func TestChainClient_GetChainMeta(t *testing.T) {
@@ -246,7 +326,19 @@ func TestChainClient_GetAccountBalance(t *testing.T) {
 	require.Nil(t, err)
 	res, err := cli.GetAccountBalance(address.String())
 	require.Nil(t, err)
-	require.NotNil(t, res)
+	meta := &Account{}
+	err = json.Unmarshal(res.Data, meta)
+	require.Nil(t, err)
+	require.Equal(t, big.NewInt(0), meta.Balance)
+
+	err = transferFromAdmin(cli, address, defaultBalance)
+	require.Nil(t, err)
+	res, err = cli.GetAccountBalance(address.String())
+	require.Nil(t, err)
+	meta1 := &Account{}
+	err = json.Unmarshal(res.Data, meta1)
+	require.Nil(t, err)
+	require.Equal(t, defaultBalance, meta1.Balance.String())
 }
 
 func TestChainClient_GetTPS(t *testing.T) {

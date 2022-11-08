@@ -27,6 +27,7 @@ const (
 	docHash                  = "QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
 	HappyRuleAddr            = "0x00000000000000000000000000000000000000a2"
 	ServiceCallContract      = "CallContract"
+	defaultBalance           = "10000000000000000000"
 )
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
