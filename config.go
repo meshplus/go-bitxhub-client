@@ -10,18 +10,20 @@ import (
 )
 
 const (
-	blockChanNumber = 1024
-	defaultTimeout  = 1 * time.Second
-	defaultPoolSize = 4
+	blockChanNumber       = 1024
+	defaultTimeout        = 1 * time.Second
+	defaultPoolSize       = 4
+	defaultInitClientSize = 4
 )
 
 type config struct {
-	logger       Logger
-	poolSize     int
-	privateKey   crypto.PrivateKey
-	nodesInfo    []*NodeInfo
-	ipfsAddrs    []string
-	timeoutLimit time.Duration // timeout limit config for dialing grpc
+	logger         Logger
+	poolSize       int
+	initClientSize int
+	privateKey     crypto.PrivateKey
+	nodesInfo      []*NodeInfo
+	ipfsAddrs      []string
+	timeoutLimit   time.Duration // timeout limit config for dialing grpc
 }
 
 type NodeInfo struct {
@@ -71,6 +73,12 @@ func WithPoolSize(size int) Option {
 	}
 }
 
+func WithInitClientSize(size int) Option {
+	return func(config *config) {
+		config.initClientSize = size
+	}
+}
+
 func generateConfig(opts ...Option) (*config, error) {
 	config := &config{}
 	for _, opt := range opts {
@@ -103,6 +111,9 @@ func checkConfig(config *config) error {
 
 	if config.poolSize == 0 {
 		config.poolSize = defaultPoolSize
+	}
+	if config.initClientSize == 0 {
+		config.initClientSize = defaultInitClientSize
 	}
 
 	// if EnableTLS is set, then tls certs must be provided

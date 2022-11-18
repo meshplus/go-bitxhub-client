@@ -40,7 +40,7 @@ func NewPool(config *config) (*ConnectionPool, error) {
 		logger:       config.logger,
 		timeoutLimit: config.timeoutLimit,
 	}
-	grpcPool, err := grpcpool.New(pool.newClient, 4, config.poolSize, 1*time.Hour)
+	grpcPool, err := grpcpool.New(pool.newClient, config.initClientSize, config.poolSize, 1*time.Hour)
 	if err != nil {
 		return nil, err
 	}
