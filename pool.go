@@ -33,7 +33,7 @@ type ConnectionPool struct {
 	clientCnt     uint64
 }
 
-// init a connection
+// NewPool init a connection
 func NewPool(config *config) (*ConnectionPool, error) {
 	pool := &ConnectionPool{
 		config:       config,

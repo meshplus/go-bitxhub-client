@@ -53,9 +53,23 @@ type ChainClient struct {
 	privateKey  crypto.PrivateKey
 	logger      Logger
 	pool        *ConnectionPool
-	ipfsClient  *IPFSClient
 	normalSeqNo int64
 	ibtpSeqNo   int64
+}
+
+func (cli *ChainClient) IPFSPutFromLocal(localfPath string) (*pb.Response, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cli *ChainClient) IPFSGet(path string) (*pb.Response, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cli *ChainClient) IPFSGetToLocal(path string, localfPath string) (*pb.Response, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (cli *ChainClient) GetTransactionByBlockHashAndIndex(blockHash string, index uint64) (*pb.GetTransactionResponse, error) {
@@ -221,16 +235,10 @@ func NewWithNoGlobalPool(opts ...Option) (*ChainClient, error) {
 		return nil, err
 	}
 
-	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
-	if err != nil {
-		return nil, err
-	}
-
 	return &ChainClient{
 		privateKey: cfg.privateKey,
 		logger:     cfg.logger,
 		pool:       clientPool,
-		ipfsClient: ipfsClient,
 	}, nil
 }
 
@@ -247,16 +255,10 @@ func New(opts ...Option) (*ChainClient, error) {
 		}
 	}
 
-	ipfsClient, err := NewIPFSClient(WithAPIAddrs(cfg.ipfsAddrs))
-	if err != nil {
-		return nil, err
-	}
-
 	return &ChainClient{
 		privateKey: cfg.privateKey,
 		logger:     cfg.logger,
 		pool:       pool,
-		ipfsClient: ipfsClient,
 	}, nil
 }
 
