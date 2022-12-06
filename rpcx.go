@@ -29,6 +29,7 @@ const (
 	GetTPSTimeout            = 2 * time.Second
 	GetChainIDTimeout        = 2 * time.Second
 	CheckPierTimeout         = 100 * time.Second
+	WaitReceiptTimeout       = 50 * time.Millisecond
 
 	ACCOUNT_KEY = "account"
 )
@@ -162,6 +163,7 @@ func (cli *ChainClient) SendRawTransactionWithReceipt(tx *pb.BxhTransaction) (*p
 		return nil, fmt.Errorf("send tx error: %w", err)
 	}
 
+	time.Sleep(WaitReceiptTimeout)
 	receipt, err := cli.GetReceipt(txHash)
 	if err != nil {
 		return nil, err
@@ -289,7 +291,7 @@ func (cli *ChainClient) SendTransactionWithReceipt(tx *pb.BxhTransaction, opts *
 	return cli.sendTransactionWithReceipt(tx, opts)
 }
 
-// GetReceipts get receipts by tx hashes
+// GetReceipt get receipts by tx hash
 func (cli *ChainClient) GetReceipt(hash string) (*pb.Receipt, error) {
 	var receipt *pb.Receipt
 	var err error
@@ -303,7 +305,7 @@ func (cli *ChainClient) GetReceipt(hash string) (*pb.Receipt, error) {
 		return nil
 	},
 		strategy.Limit(5),
-		strategy.Backoff(backoff.Fibonacci(500*time.Millisecond)),
+		strategy.Backoff(backoff.Fibonacci(WaitReceiptTimeout)),
 	)
 
 	if err != nil {
@@ -376,6 +378,7 @@ func (cli *ChainClient) sendTransactionWithReceipt(tx *pb.BxhTransaction, opts *
 		return nil, fmt.Errorf("send tx error: %w", err)
 	}
 
+	time.Sleep(WaitReceiptTimeout)
 	receipt, err := cli.GetReceipt(hash)
 	if err != nil {
 		return nil, err
