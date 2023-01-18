@@ -40,7 +40,7 @@ func NewPool(config *config) (*ConnectionPool, error) {
 		logger:       config.logger,
 		timeoutLimit: config.timeoutLimit,
 	}
-	grpcPool, err := grpcpool.New(pool.newClient, 1, config.poolSize, 1*time.Hour)
+	grpcPool, err := grpcpool.New(pool.newClient, 4, config.poolSize, 1*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 
 // get grpcClient will try to get idle grpcClient
 func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
-	randGenerator := rand.New(rand.NewSource(time.Now().Unix()))
+	randGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
 	randomIndex := randGenerator.Intn(len(pool.config.nodesInfo))
 	nodeInfo := pool.config.nodesInfo[randomIndex]
 	// try to build a connect or reconnect
