@@ -23,12 +23,12 @@ const (
 	keyPassword              = "bitxhub"
 	appchainAdminDIDPrefix   = "did:bitxhub:appchain"
 	relaychainAdminDIDPrefix = "did:bitxhub:relayroot"
-	docAddr                  = "/ipfs/QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
-	docHash                  = "QmQVxzUqN2Yv2UHUQXYwH8dSNkM8ReJ9qPqwJsf8zzoNUi"
 	HappyRuleAddr            = "0x00000000000000000000000000000000000000a2"
 	ServiceCallContract      = "CallContract"
 	defaultBalance           = "10000000000000000000"
 )
+
+var index uint64
 
 func TestChainClient_GetBlockHeader(t *testing.T) {
 	cli, privKey, from, to := prepareKeypair(t)
@@ -89,14 +89,16 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 	nonce, err := cli.GetPendingNonceByAccount(addr.String())
 	require.Nil(t, err)
 
-	transfer(t, cli, from, 1000000000000000, &TransactOpts{
+	transfer(t, cli, from, 10000000000000000, &TransactOpts{
 		Nonce: nonce,
 		From:  from.String(),
 	})
-	transfer(t, cli, to, 1000000000000000, &TransactOpts{
+	transfer(t, cli, to, 10000000000000000, &TransactOpts{
 		Nonce: nonce + 1,
 		From:  to.String(),
 	})
+
+	time.Sleep(2 * time.Second)
 
 	sendInterchaintx(t, cli0, cli1)
 
@@ -123,8 +125,10 @@ func TestChainClient_GetInterchainTxWrappers(t *testing.T) {
 }
 
 func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, from, to *types.Address) {
-	privKey, err := asym.RestorePrivateKey(filepath.Join("testdata", "key.json"), "bitxhub")
+	privKey, err := asym.RestorePrivateKey(filepath.Join("testdata", fmt.Sprintf("node%d", index+1), "key.json"), "bitxhub")
 	require.Nil(t, err)
+	index++
+	index = index % 4
 	privKey1, err := asym.GenerateKeyPair(crypto.Secp256k1)
 	require.Nil(t, err)
 
@@ -144,7 +148,7 @@ func prepareKeypair(t *testing.T) (cli *ChainClient, privKey crypto.PrivateKey, 
 	return cli, privKey, from, to
 }
 
-func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, privKey crypto.PrivateKey) {
+func sendNormal(t *testing.T, cli *ChainClient, from, to *types.Address, _ crypto.PrivateKey) {
 	data := &pb.TransactionData{
 		Amount: "10",
 	}
@@ -290,7 +294,7 @@ func sendInterchaintx(t *testing.T, cli0 *ChainClient, cli1 *ChainClient) {
 	// vote for service1 register
 	vote(t, adminCli1, adminCli2, adminCli3, proposalId)
 
-	ibtp := getIBTP(t, srcServiceID, dstServiceID, 1, pb.IBTP_INTERCHAIN, proof)
+	ibtp := getIBTP(srcServiceID, dstServiceID, 1, pb.IBTP_INTERCHAIN, proof)
 
 	tx, _ := cli0.GenerateIBTPTx(ibtp)
 	tx.Extra = proof
@@ -346,7 +350,7 @@ func deployRule(t *testing.T, cli *ChainClient, appchainID string) string {
 	return gjson.Get(string(ret.Ret), "proposal_id").String()
 }
 
-func getIBTP(t *testing.T, from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
+func getIBTP(from, to string, index uint64, typ pb.IBTP_Type, proof []byte) *pb.IBTP {
 	content := &pb.Content{
 		Func: "interchainCharge",
 		Args: [][]byte{[]byte("Alice"), []byte("Alice"), []byte("1")},
