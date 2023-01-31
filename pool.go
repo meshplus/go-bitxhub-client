@@ -40,7 +40,7 @@ func NewPool(config *config) (*ConnectionPool, error) {
 		logger:       config.logger,
 		timeoutLimit: config.timeoutLimit,
 	}
-	grpcPool, err := grpcpool.New(pool.newClient, 1, config.poolSize, 1*time.Hour)
+	grpcPool, err := grpcpool.New(pool.newClient, 4, config.poolSize, 1*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -71,46 +71,56 @@ func (pool *ConnectionPool) getClient() (*grpcClient, error) {
 
 // get grpcClient will try to get idle grpcClient
 func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
-	randGenerator := rand.New(rand.NewSource(time.Now().Unix()))
-	randomIndex := randGenerator.Intn(len(pool.config.nodesInfo))
-	nodeInfo := pool.config.nodesInfo[randomIndex]
-	// try to build a connect or reconnect
-	opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
-	// if EnableTLS is set, then setup connection with ca cert
-	if nodeInfo.EnableTLS {
-		certPathByte, err := ioutil.ReadFile(nodeInfo.CertPath)
-		if err != nil {
-			return nil, err
-		}
-		cp := x509.NewCertPool()
-		if !cp.AppendCertsFromPEM(certPathByte) {
-			return nil, fmt.Errorf("credentials: failed to append certificates")
-		}
-		cert, err := tls.LoadX509KeyPair(nodeInfo.AccessCert, nodeInfo.AccessKey)
-		creds := credentials.NewTLS(&tls.Config{
-			Certificates: []tls.Certificate{cert}, ServerName: nodeInfo.CommonName, RootCAs: cp})
+	var (
+		conn    *grpc.ClientConn
+		tlsErr  error
+		connErr error
+	)
+	if connErr = retry.Retry(func(attempt uint) error {
+		randGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
+		randomIndex := randGenerator.Intn(len(pool.config.nodesInfo))
+		nodeInfo := pool.config.nodesInfo[randomIndex]
+		// try to build a connect or reconnect
+		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
+		// if EnableTLS is set, then setup connection with ca cert
+		if nodeInfo.EnableTLS {
+			certPathByte, tlsErr := ioutil.ReadFile(nodeInfo.CertPath)
+			if tlsErr != nil {
+				return nil
+			}
+			cp := x509.NewCertPool()
+			if !cp.AppendCertsFromPEM(certPathByte) {
+				tlsErr = fmt.Errorf("credentials: failed to append certificates")
+				return nil
+			}
+			cert, err := tls.LoadX509KeyPair(nodeInfo.AccessCert, nodeInfo.AccessKey)
+			if err != nil {
+				pool.logger.Debugf("Creat tls credentials from %s for client %s", nodeInfo.CertPath, nodeInfo.Addr)
+				tlsErr = fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
+				return nil
+			}
+			creds := credentials.NewTLS(&tls.Config{
+				Certificates: []tls.Certificate{cert}, ServerName: nodeInfo.CommonName, RootCAs: cp})
 
-		if err != nil {
-			pool.logger.Debugf("Creat tls credentials from %s for client %s", nodeInfo.CertPath, nodeInfo.Addr)
-			return nil, fmt.Errorf("%w: tls config is not right", ErrBrokenNetwork)
+			opts = append(opts, grpc.WithTransportCredentials(creds))
+		} else {
+			opts = append(opts, grpc.WithInsecure())
 		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
-	var conn *grpc.ClientConn
-	if err := retry.Retry(func(attempt uint) error {
-		var err error
-		conn, err = grpc.Dial(nodeInfo.Addr, opts...)
-		if err != nil {
+		conn, connErr = grpc.Dial(nodeInfo.Addr, opts...)
+		if connErr != nil {
 			pool.logger.Infof("Dial with addr: %s fail", nodeInfo.Addr)
 			return fmt.Errorf("%w: dial node %s failed", ErrBrokenNetwork, nodeInfo.Addr)
 		}
 		pool.logger.Debugf("Establish connection with bitxhub %s successfully, pool is %d pool conn cnt is %d", nodeInfo.Addr, pool.pool.Available(), atomic.AddUint64(&pool.clientCnt, 1))
 		return nil
-	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.config.nodesInfo)))); err != nil {
-		return nil, err
+	}, strategy.Wait(500*time.Millisecond), strategy.Limit(uint(5*len(pool.config.nodesInfo)))); connErr != nil {
+		return nil, connErr
 	}
+
+	if tlsErr != nil {
+		return nil, tlsErr
+	}
+
 	return conn, nil
 }
 
