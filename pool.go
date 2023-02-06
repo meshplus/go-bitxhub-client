@@ -15,7 +15,6 @@ import (
 	"github.com/meshplus/bitxhub-model/pb"
 	grpcpool "github.com/processout/grpc-go-pool"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -84,7 +83,8 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
 		// if EnableTLS is set, then setup connection with ca cert
 		if nodeInfo.EnableTLS {
-			certPathByte, tlsErr := ioutil.ReadFile(nodeInfo.CertPath)
+			var certPathByte []byte
+			certPathByte, tlsErr = ioutil.ReadFile(nodeInfo.CertPath)
 			if tlsErr != nil {
 				return nil
 			}
@@ -124,10 +124,10 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func (grpcCli *grpcClient) available() bool {
+/*func (grpcCli *grpcClient) available() bool {
 	if grpcCli.conn.ClientConn == nil {
 		return false
 	}
 	s := grpcCli.conn.ClientConn.GetState()
 	return s == connectivity.Idle || s == connectivity.Ready
-}
+}*/

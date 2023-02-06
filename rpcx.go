@@ -50,12 +50,12 @@ type Account struct {
 var _ Client = (*ChainClient)(nil)
 
 type ChainClient struct {
-	privateKey  crypto.PrivateKey
-	logger      Logger
-	pool        *ConnectionPool
-	ipfsClient  *IPFSClient
-	normalSeqNo int64
-	ibtpSeqNo   int64
+	privateKey crypto.PrivateKey
+	logger     Logger
+	pool       *ConnectionPool
+	ipfsClient *IPFSClient
+	//normalSeqNo int64
+	//ibtpSeqNo   int64
 }
 
 func (cli *ChainClient) GetTransactionByBlockHashAndIndex(blockHash string, index uint64) (*pb.GetTransactionResponse, error) {
