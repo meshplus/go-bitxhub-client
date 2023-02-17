@@ -282,10 +282,10 @@ func (mr *MockClientMockRecorder) GetReceipt(hash interface{}) *gomock.Call {
 }
 
 // GetTPS mocks base method.
-func (m *MockClient) GetTPS(begin, end uint64) (uint64, error) {
+func (m *MockClient) GetTPS(begin, end uint64) (*pb.GetTPSResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTPS", begin, end)
-	ret0, _ := ret[0].(uint64)
+	ret0, _ := ret[0].(*pb.GetTPSResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

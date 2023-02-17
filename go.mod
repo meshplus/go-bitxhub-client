@@ -8,7 +8,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d
-	github.com/meshplus/bitxhub-model v1.2.1-0.20221031060115-cd3292575517
+	github.com/meshplus/bitxhub-model v1.28.0
 	github.com/meshplus/eth-kit v0.0.0-20221028095005-bdda18e64555
 	github.com/processout/grpc-go-pool v1.2.1
 	github.com/sirupsen/logrus v1.8.1

@@ -384,9 +384,9 @@ func TestChainClient_GetTPS(t *testing.T) {
 	meta1, err := cli.GetChainMeta()
 	require.Nil(t, err)
 
-	res, err := cli.GetTPS(meta0.Height, meta1.Height)
+	tps, err := cli.GetTPS(meta0.Height, meta1.Height)
 	require.Nil(t, err)
-	require.True(t, res > 0)
+	require.True(t, tps > 0)
 }
 
 func TestChainClient_GetChainID(t *testing.T) {

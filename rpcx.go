@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Rican7/retry"
@@ -654,11 +655,16 @@ func (cli *ChainClient) GetTPS(begin, end uint64) (uint64, error) {
 		return 0, fmt.Errorf("%s, %w", err.Error(), ErrBrokenNetwork)
 	}
 
-	if resp == nil || resp.Data == nil {
+	if resp == nil {
 		return 0, fmt.Errorf("empty response")
 	}
 
-	return binary.LittleEndian.Uint64(resp.Data), nil
+	res := strings.Split(string(resp.Data), " ")
+	tps, err := strconv.ParseFloat(res[len(res)-1], 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint64(tps), nil
 }
 
 func (cli *ChainClient) GetChainID() (uint64, error) {
