@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"sync/atomic"
 	"time"
 
@@ -80,7 +81,17 @@ func (pool *ConnectionPool) newClient() (*grpc.ClientConn, error) {
 		randomIndex := randGenerator.Intn(len(pool.config.nodesInfo))
 		nodeInfo := pool.config.nodesInfo[randomIndex]
 		// try to build a connect or reconnect
-		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTimeout(pool.timeoutLimit)}
+		// todo: input specify ip and port from config
+		opts := []grpc.DialOption{
+			grpc.WithBlock(),
+			grpc.WithTimeout(pool.timeoutLimit),
+			grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+				return (&net.Dialer{LocalAddr: &net.TCPAddr{
+					IP:   net.ParseIP("0.0.0.0"),
+					Port: 6610,
+				}}).DialContext(ctx, "tcp6", addr)
+			}),
+		}
 		// if EnableTLS is set, then setup connection with ca cert
 		if nodeInfo.EnableTLS {
 			var certPathByte []byte
