@@ -13,7 +13,7 @@ require (
 	github.com/processout/grpc-go-pool v1.2.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
-	github.com/tidwall/gjson v1.6.8
+	github.com/tidwall/gjson v1.9.3
 	google.golang.org/grpc v1.50.1
 )
 
@@ -49,8 +49,8 @@ require (
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
 	github.com/spacemonkeygo/spacelog v0.0.0-20180420211403-2296661a0572 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/tidwall/match v1.0.3 // indirect
-	github.com/tidwall/pretty v1.0.2 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
