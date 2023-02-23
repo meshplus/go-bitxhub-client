@@ -283,12 +283,11 @@ func TestChainClient_GetSigns(t *testing.T) {
 	cli, err := Cli()
 	require.Nil(t, err)
 
-	rep, err := cli.GetMultiSigns("30", pb.GetSignsRequest_MULTI_BLOCK_HEADER)
-	fmt.Println("1====")
+	block, err := cli.GetBlock("", pb.GetBlockRequest_LATEST, false)
 	require.Nil(t, err)
-	for k, v := range rep.Sign {
-		fmt.Printf("K: %s, V: %s\n", k, string(v))
-	}
+	rep, err := cli.GetMultiSigns(fmt.Sprintf("%d", block.Height()), pb.GetSignsRequest_MULTI_BLOCK_HEADER)
+	require.Nil(t, err)
+	require.NotEmpty(t, rep.Sign)
 
 	//time1 := time.Now()
 	//rep, err = cli.GetSigns("1356:0xF9e13c4266e96e4C0Da03eca961e609f792CB3aa:mychannel&transfer-1356:0x7d8B9C5c5D192A5425402369c5127B389f5CfE95:mychannel&transfer-1",
@@ -384,9 +383,9 @@ func TestChainClient_GetTPS(t *testing.T) {
 	meta1, err := cli.GetChainMeta()
 	require.Nil(t, err)
 
-	res, err := cli.GetTPS(meta0.Height, meta1.Height)
+	tps, err := cli.GetTPS(meta0.Height, meta1.Height)
 	require.Nil(t, err)
-	require.True(t, res > 0)
+	require.True(t, tps > 0)
 }
 
 func TestChainClient_GetChainID(t *testing.T) {
