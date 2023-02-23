@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Rican7/retry v0.1.0
-	github.com/ethereum/go-ethereum v1.10.8
+	github.com/ethereum/go-ethereum v1.10.22
 	github.com/golang/mock v1.6.0
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/meshplus/bitxhub-kit v1.2.1-0.20220325052414-bc17176c509d
@@ -19,9 +19,11 @@ require (
 
 require (
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/cbergoon/merkletree v0.2.0 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
